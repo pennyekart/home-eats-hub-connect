@@ -4,16 +4,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
 
 interface Transaction {
   id: string;
   amount: number;
+  transaction_type: string;
   from_date: string | null;
   to_date: string | null;
   remarks: string | null;
-  created_at: string;
   created_by: string | null;
+  created_at: string;
 }
 
 interface TransactionsTableProps {
@@ -39,17 +39,15 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ permissions, onDa
       const { data, error } = await supabase
         .from('cash_transactions')
         .select('*')
-        .eq('transaction_type', 'cash_transfer')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
       setTransactions(data || []);
     } catch (error) {
       console.error('Error loading transactions:', error);
       toast({
         title: "Error",
-        description: "Failed to load cash transfers",
+        description: "Failed to load transactions",
         variant: "destructive",
       });
     } finally {
@@ -57,13 +55,30 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ permissions, onDa
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTransactionTypeColor = (type: string) => {
+    switch (type) {
+      case 'cash_transfer':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   if (loading) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
+          <p className="text-center text-muted-foreground">Loading transactions...</p>
         </CardContent>
       </Card>
     );
@@ -72,62 +87,45 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ permissions, onDa
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cash Transfer History</CardTitle>
+        <CardTitle>Cash Transactions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Period</TableHead>
-                <TableHead>Remarks</TableHead>
-                <TableHead>Created By</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.length === 0 ? (
+        {transactions.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            No transactions found.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4">
-                    No cash transfers found
-                  </TableCell>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Remarks</TableHead>
+                  <TableHead>Created By</TableHead>
                 </TableRow>
-              ) : (
-                transactions.map((transaction) => (
+              </TableHeader>
+              <TableBody>
+                {transactions.map((transaction) => (
                   <TableRow key={transaction.id}>
+                    <TableCell>{formatDate(transaction.created_at)}</TableCell>
                     <TableCell>
-                      {format(new Date(transaction.created_at), 'dd/MM/yyyy')}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        ₹{transaction.amount.toFixed(2)}
+                      <Badge className={getTransactionTypeColor(transaction.transaction_type)}>
+                        {transaction.transaction_type.replace('_', ' ').toUpperCase()}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      {transaction.from_date && transaction.to_date ? (
-                        <span className="text-sm">
-                          {format(new Date(transaction.from_date), 'dd/MM/yyyy')} - {' '}
-                          {format(new Date(transaction.to_date), 'dd/MM/yyyy')}
-                        </span>
-                      ) : (
-                        '-'
-                      )}
+                    <TableCell className="font-medium">
+                      ₹{transaction.amount.toFixed(2)}
                     </TableCell>
-                    <TableCell>
-                      <div className="max-w-[200px] truncate">
-                        {transaction.remarks || '-'}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {transaction.created_by || 'System'}
-                    </TableCell>
+                    <TableCell>{transaction.remarks || '-'}</TableCell>
+                    <TableCell>{transaction.created_by || '-'}</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

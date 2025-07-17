@@ -4,11 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -26,8 +21,6 @@ const CashTransferDialog: React.FC<CashTransferDialogProps> = ({
   maxAmount
 }) => {
   const [amount, setAmount] = useState('');
-  const [fromDate, setFromDate] = useState<Date>();
-  const [toDate, setToDate] = useState<Date>();
   const [remarks, setRemarks] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -35,36 +28,34 @@ const CashTransferDialog: React.FC<CashTransferDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!amount || parseFloat(amount) <= 0) {
+    const transferAmount = parseFloat(amount);
+    if (!transferAmount || transferAmount <= 0) {
       toast({
-        title: "Error",
+        title: "Invalid Amount",
         description: "Please enter a valid amount",
         variant: "destructive",
       });
       return;
     }
 
-    if (parseFloat(amount) > maxAmount) {
+    if (transferAmount > maxAmount) {
       toast({
-        title: "Error",
-        description: `Amount cannot exceed cash in hand (₹${maxAmount.toFixed(2)})`,
+        title: "Insufficient Funds",
+        description: `Cannot transfer more than ₹${maxAmount.toFixed(2)}`,
         variant: "destructive",
       });
       return;
     }
 
     setLoading(true);
-
     try {
       const { error } = await supabase
         .from('cash_transactions')
         .insert({
+          amount: transferAmount,
           transaction_type: 'cash_transfer',
-          amount: parseFloat(amount),
-          from_date: fromDate?.toISOString().split('T')[0],
-          to_date: toDate?.toISOString().split('T')[0],
           remarks: remarks || null,
-          created_by: 'admin' // This should be replaced with actual admin user
+          created_by: 'admin',
         });
 
       if (error) throw error;
@@ -74,14 +65,11 @@ const CashTransferDialog: React.FC<CashTransferDialogProps> = ({
         description: "Cash transfer recorded successfully",
       });
 
-      // Reset form
       setAmount('');
-      setFromDate(undefined);
-      setToDate(undefined);
       setRemarks('');
       onSuccess();
     } catch (error) {
-      console.error('Error recording cash transfer:', error);
+      console.error('Error creating cash transfer:', error);
       toast({
         title: "Error",
         description: "Failed to record cash transfer",
@@ -94,106 +82,50 @@ const CashTransferDialog: React.FC<CashTransferDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Cash Transfer to Bank</DialogTitle>
         </DialogHeader>
-
+        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="amount">Amount (₹)</Label>
             <Input
               id="amount"
               type="number"
               step="0.01"
-              placeholder="Enter amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount"
+              max={maxAmount}
               required
             />
-            <p className="text-sm text-muted-foreground">
-              Available: ₹{maxAmount.toFixed(2)}
+            <p className="text-sm text-muted-foreground mt-1">
+              Maximum available: ₹{maxAmount.toFixed(2)}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>From Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !fromDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fromDate ? format(fromDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={fromDate}
-                    onSelect={setFromDate}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label>To Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !toDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {toDate ? format(toDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={toDate}
-                    onSelect={setToDate}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="remarks">Remarks</Label>
+          <div>
+            <Label htmlFor="remarks">Remarks (Optional)</Label>
             <Textarea
               id="remarks"
-              placeholder="Enter any remarks (optional)"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              rows={3}
+              placeholder="Enter any remarks"
             />
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
+          <div className="flex gap-2 pt-4">
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Processing...' : 'Transfer'}
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
               Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Processing...' : 'Transfer'}
             </Button>
           </div>
         </form>

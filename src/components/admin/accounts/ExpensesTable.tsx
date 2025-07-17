@@ -4,13 +4,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
 
 interface Expense {
   id: string;
   amount: number;
-  payment_method: 'cash' | 'bank';
   description: string;
+  payment_method: string;
   created_at: string;
 }
 
@@ -36,12 +35,11 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ permissions, onDataChange
     try {
       const { data, error } = await supabase
         .from('expenses')
-        .select('id, amount, payment_method, description, created_at')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      setExpenses((data || []) as Expense[]);
+      setExpenses(data || []);
     } catch (error) {
       console.error('Error loading expenses:', error);
       toast({
@@ -54,13 +52,32 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ permissions, onDataChange
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getPaymentMethodColor = (method: string) => {
+    switch (method) {
+      case 'cash':
+        return 'bg-green-100 text-green-800';
+      case 'bank':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   if (loading) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
+          <p className="text-center text-muted-foreground">Loading expenses...</p>
         </CardContent>
       </Card>
     );
@@ -69,55 +86,43 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ permissions, onDataChange
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Expenses History</CardTitle>
+        <CardTitle>Expenses</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Payment Method</TableHead>
-                <TableHead>Description</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.length === 0 ? (
+        {expenses.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            No expenses found.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">
-                    No expenses found
-                  </TableCell>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Payment Method</TableHead>
                 </TableRow>
-              ) : (
-                expenses.map((expense) => (
+              </TableHeader>
+              <TableBody>
+                {expenses.map((expense) => (
                   <TableRow key={expense.id}>
-                    <TableCell>
-                      {format(new Date(expense.created_at), 'dd/MM/yyyy')}
+                    <TableCell>{formatDate(expense.created_at)}</TableCell>
+                    <TableCell>{expense.description}</TableCell>
+                    <TableCell className="font-medium">
+                      ₹{expense.amount.toFixed(2)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="destructive">
-                        ₹{expense.amount.toFixed(2)}
+                      <Badge className={getPaymentMethodColor(expense.payment_method)}>
+                        {expense.payment_method.toUpperCase()}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={expense.payment_method === 'cash' ? 'default' : 'secondary'}
-                      >
-                        {expense.payment_method === 'cash' ? 'Cash' : 'Bank'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="max-w-[200px] truncate">
-                        {expense.description}
-                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
