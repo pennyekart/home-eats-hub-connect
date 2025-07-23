@@ -169,7 +169,10 @@ const AdminDashboard = () => {
       <Navbar />
       
       {/* Pending Registrations Popup */}
-      <PendingRegistrationsPopup adminSession={adminSession} />
+      <PendingRegistrationsPopup 
+        adminSession={adminSession} 
+        onNavigateToRegistrations={() => setActiveTab('registrations')}
+      />
       
       {/* Admin Header */}
       <div className="bg-white shadow-sm border-b">

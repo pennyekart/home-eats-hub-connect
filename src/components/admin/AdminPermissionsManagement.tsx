@@ -37,7 +37,8 @@ const AVAILABLE_MODULES = [
   { id: 'announcements', name: 'Announcements', description: 'Manage public announcements' },
   { id: 'utilities', name: 'Utilities', description: 'Manage utility links' },
   { id: 'reports', name: 'Reports', description: 'View and generate reports' },
-  { id: 'admin_users', name: 'Admin Users', description: 'Manage admin users and permissions' }
+  { id: 'admin_users', name: 'Admin Users', description: 'Manage admin users and permissions' },
+  { id: 'pending_registrations_alert', name: 'Pending Registrations Alert', description: 'View pending registrations expiring within 5 days' }
 ];
 
 const PERMISSION_TYPES = [
