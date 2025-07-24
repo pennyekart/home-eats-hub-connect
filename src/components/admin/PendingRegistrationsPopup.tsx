@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X, Clock, User, Phone, FileDown, FileSpreadsheet } from 'lucide-react';
@@ -16,7 +17,6 @@ interface PendingRegistrationsPopupProps {
 
 const PendingRegistrationsPopup = ({ adminSession, onNavigateToRegistrations }: PendingRegistrationsPopupProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasShownToday, setHasShownToday] = useState(false);
 
   // Helper function to calculate days remaining for pending registrations
   const calculateDaysRemaining = (createdAt: string): number => {
@@ -133,17 +133,18 @@ const PendingRegistrationsPopup = ({ adminSession, onNavigateToRegistrations }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="text-xl font-semibold text-red-600 flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Pending Registrations Alert
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-hidden flex flex-col mx-auto">
+        <DialogHeader className="flex flex-row items-center justify-between pb-4">
+          <DialogTitle className="text-lg sm:text-xl font-semibold text-red-600 flex items-center gap-2">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Pending Registrations Alert</span>
+            <span className="sm:hidden">Expiring Soon</span>
           </DialogTitle>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleClose}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 flex-shrink-0"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -151,8 +152,8 @@ const PendingRegistrationsPopup = ({ adminSession, onNavigateToRegistrations }: 
         
         <div className="flex-1 overflow-auto">
           <div className="mb-4">
-            <p className="text-sm text-muted-foreground">
-              The following {expiringRegistrations.length} registration(s) are expiring within 5 days and require immediate attention:
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {expiringRegistrations.length} registration(s) expiring within 5 days:
             </p>
           </div>
 
@@ -163,40 +164,40 @@ const PendingRegistrationsPopup = ({ adminSession, onNavigateToRegistrations }: 
               return (
                 <div
                   key={registration.id}
-                  className="p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
+                  className="p-3 sm:p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <h4 className="font-medium">{registration.name}</h4>
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {registration.mobile_number}
+                  <div className="flex items-start justify-between mb-2 gap-2">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <User className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium text-sm sm:text-base truncate">{registration.name}</h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                          <Phone className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{registration.mobile_number}</span>
                         </p>
                       </div>
                     </div>
                     <Badge
                       variant="outline"
-                      className={getDaysRemainingColor(daysRemaining)}
+                      className={`${getDaysRemainingColor(daysRemaining)} text-xs whitespace-nowrap flex-shrink-0`}
                     >
-                      {daysRemaining === 1 ? '1 day left' : `${daysRemaining} days left`}
+                      {daysRemaining === 1 ? '1 day' : `${daysRemaining} days`}
                     </Badge>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
                     <div>
-                      <span className="font-medium">Customer ID:</span>
-                      <p className="text-muted-foreground">{registration.customer_id}</p>
+                      <span className="font-medium">ID:</span>
+                      <p className="text-muted-foreground truncate">{registration.customer_id}</p>
                     </div>
                     <div>
                       <span className="font-medium">Category:</span>
-                      <p className="text-muted-foreground">{registration.categories?.name || 'N/A'}</p>
+                      <p className="text-muted-foreground truncate">{registration.categories?.name || 'N/A'}</p>
                     </div>
                     {registration.panchayaths && (
-                      <div className="col-span-2">
+                      <div className="col-span-1 sm:col-span-2">
                         <span className="font-medium">Location:</span>
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground truncate">
                           {registration.panchayaths.name}, {registration.panchayaths.district}
                         </p>
                       </div>
@@ -212,32 +213,32 @@ const PendingRegistrationsPopup = ({ adminSession, onNavigateToRegistrations }: 
           </div>
         </div>
 
-        <div className="flex justify-between items-center pt-4 border-t">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t gap-3">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportExcel}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 flex-1 sm:flex-initial"
             >
-              <FileSpreadsheet className="h-4 w-4" />
-              Export Excel
+              <FileSpreadsheet className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm">Excel</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportPDF}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 flex-1 sm:flex-initial"
             >
-              <FileDown className="h-4 w-4" />
-              Export PDF
+              <FileDown className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm">PDF</span>
             </Button>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleClose}>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={handleClose} className="flex-1 sm:flex-initial text-xs sm:text-sm">
               Close
             </Button>
-            <Button onClick={handleGotItClick}>
+            <Button onClick={handleGotItClick} className="flex-1 sm:flex-initial text-xs sm:text-sm">
               Got It
             </Button>
           </div>

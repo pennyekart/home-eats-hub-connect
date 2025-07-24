@@ -17,6 +17,8 @@ import ReportsManagement from '@/components/admin/ReportsManagement';
 import UtilitiesManagement from '@/components/admin/UtilitiesManagement';
 import AccountsManagement from '@/components/admin/AccountsManagement';
 import PendingRegistrationsPopup from '@/components/admin/PendingRegistrationsPopup';
+import ExpiredRegistrationsNotification from '@/components/admin/ExpiredRegistrationsNotification';
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const {
@@ -25,6 +27,7 @@ const AdminDashboard = () => {
   const [adminSession, setAdminSession] = useState(null);
   const [activeTab, setActiveTab] = useState('registrations');
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const checkAdminSession = () => {
       const session = localStorage.getItem('adminSession');
@@ -71,6 +74,7 @@ const AdminDashboard = () => {
     },
     enabled: !!adminSession?.id
   });
+
   const handleLogout = () => {
     localStorage.removeItem('adminSession');
     toast({
@@ -79,6 +83,7 @@ const AdminDashboard = () => {
     });
     navigate('/admin/login');
   };
+
   const getPermissionsForModule = (module: string) => {
     if (!adminPermissions) return {
       canRead: false,
@@ -92,6 +97,7 @@ const AdminDashboard = () => {
       canDelete: modulePermissions.some(p => p.permission_type === 'delete')
     };
   };
+
   const getRolePermissions = (role: string, adminId: string) => {
     console.log('Getting permissions for role:', role, 'adminId:', adminId);
     console.log('Admin permissions from DB:', adminPermissions);
@@ -150,22 +156,26 @@ const AdminDashboard = () => {
         };
     }
   };
+
   if (isLoading || !adminSession) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>;
   }
+
   if (!adminSession) {
     return null;
   }
+
   const permissions = adminSession ? getRolePermissions(adminSession.role, adminSession.id) : {
     canRead: false,
     canWrite: false,
     canDelete: false,
     canManageAdmins: false
   };
-  console.log('Admin permissions:', permissions);
-  return <div className="min-h-screen bg-gray-50">
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
       
       {/* Pending Registrations Popup */}
@@ -187,10 +197,13 @@ const AdminDashboard = () => {
                 </span>
               </p>
             </div>
-            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2 bg-red-400 hover:bg-red-300">
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <ExpiredRegistrationsNotification adminSession={adminSession} />
+              <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2 bg-red-400 hover:bg-red-300">
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -198,9 +211,9 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          {adminSession.role === 'user_admin' ?
-        // User admin only sees registrations
-        <div className="mb-6">
+          {adminSession.role === 'user_admin' ? (
+            // User admin only sees registrations
+            <div className="mb-6">
               <div className="border-b border-gray-200">
                 <nav className="-mb-px flex">
                   <button className="bg-white border-b-2 border-blue-500 text-blue-600 py-4 px-6 text-sm font-medium flex items-center gap-2">
@@ -209,7 +222,9 @@ const AdminDashboard = () => {
                   </button>
                 </nav>
               </div>
-            </div> : <div className="mb-6">
+            </div>
+          ) : (
+            <div className="mb-6">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 mb-6">
                 {getPermissionsForModule('registrations').canRead && <button onClick={() => setActiveTab('registrations')} className={`flex flex-col items-center gap-2 p-4 rounded-lg border transition-all ${activeTab === 'registrations' ? 'bg-primary text-primary-foreground border-primary shadow-lg' : 'bg-card hover:bg-accent border-border hover:shadow-md'}`}>
                     <Users className="h-5 w-5" />
@@ -244,11 +259,14 @@ const AdminDashboard = () => {
                     <span className="text-xs font-medium text-center">Admin Control</span>
                   </button>}
               </div>
-            </div>}
+            </div>
+          )}
 
-          {adminSession.role === 'user_admin' ?
-        // User admin only sees registrations
-        <RegistrationsManagement permissions={permissions} /> : <>
+          {adminSession.role === 'user_admin' ? (
+            // User admin only sees registrations
+            <RegistrationsManagement permissions={permissions} />
+          ) : (
+            <>
               {getPermissionsForModule('registrations').canRead && <TabsContent value="registrations">
                   <RegistrationsManagement permissions={permissions} />
                 </TabsContent>}
@@ -283,9 +301,12 @@ const AdminDashboard = () => {
                     <AdminPermissionsManagement permissions={permissions} />
                   </div>
                 </TabsContent>}
-            </>}
+            </>
+          )}
         </Tabs>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default AdminDashboard;
