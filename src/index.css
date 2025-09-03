@@ -53,6 +53,14 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Custom gradients for job selection cards */
+    --gradient-job-selection: linear-gradient(135deg, 266 100% 85%, 310 100% 85%);
+    --gradient-add-program: linear-gradient(135deg, 142 100% 85%, 120 100% 75%);
+    --job-card: 266 100% 95%;
+    --job-card-foreground: 266 100% 20%;
+    --program-card: 142 100% 95%;
+    --program-card-foreground: 142 100% 20%;
   }
 
   .dark {
@@ -91,6 +99,14 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Dark mode gradients */
+    --gradient-job-selection: linear-gradient(135deg, 266 80% 60%, 310 80% 60%);
+    --gradient-add-program: linear-gradient(135deg, 142 80% 60%, 120 80% 50%);
+    --job-card: 266 80% 15%;
+    --job-card-foreground: 266 100% 85%;
+    --program-card: 142 80% 15%;
+    --program-card-foreground: 142 100% 85%;
   }
 }
 

@@ -1,14 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import MobileVerification from '@/components/MobileVerification';
+import NotRegistered from '@/components/NotRegistered';
+import LandingPage from '@/components/LandingPage';
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [currentView, setCurrentView] = useState<'verification' | 'not-registered' | 'landing'>('verification');
+  const [userData, setUserData] = useState<any>(null);
+
+  const handleVerified = (data: any) => {
+    setUserData(data);
+    setCurrentView('landing');
+  };
+
+  const handleNotRegistered = () => {
+    setCurrentView('not-registered');
+  };
+
+  const handleBack = () => {
+    setCurrentView('verification');
+  };
+
+  const handleLogout = () => {
+    setUserData(null);
+    setCurrentView('verification');
+  };
+
+  if (currentView === 'verification') {
+    return <MobileVerification onVerified={handleVerified} onNotRegistered={handleNotRegistered} />;
+  }
+
+  if (currentView === 'not-registered') {
+    return <NotRegistered onBack={handleBack} />;
+  }
+
+  return <LandingPage userData={userData} onLogout={handleLogout} />;
 };
 
 export default Index;

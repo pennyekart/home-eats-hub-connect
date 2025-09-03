@@ -61,7 +61,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				'job-card': {
+					DEFAULT: 'hsl(var(--job-card))',
+					foreground: 'hsl(var(--job-card-foreground))'
+				},
+				'program-card': {
+					DEFAULT: 'hsl(var(--program-card))',
+					foreground: 'hsl(var(--program-card-foreground))'
 				}
+			},
+			backgroundImage: {
+				'gradient-job-selection': 'var(--gradient-job-selection)',
+				'gradient-add-program': 'var(--gradient-add-program)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
