@@ -51,9 +51,9 @@ const Admin = () => {
   }, []);
 
   const filteredRegistrations = registrations.filter(reg =>
-    reg.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    reg.mobile?.includes(searchTerm) ||
-    reg.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    reg.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    reg.mobile_number?.includes(searchTerm) ||
+    reg.address?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -98,7 +98,7 @@ const Admin = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name, mobile, or email..."
+                  placeholder="Search by name, mobile, or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -124,9 +124,9 @@ const Admin = () => {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Mobile</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Age</TableHead>
-                    <TableHead>Location</TableHead>
+                    <TableHead>Customer ID</TableHead>
+                    <TableHead>Ward</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Registration Date</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -150,12 +150,20 @@ const Admin = () => {
                     filteredRegistrations.map((registration, index) => (
                       <TableRow key={registration.id || index}>
                         <TableCell className="font-medium">
-                          {registration.name || 'N/A'}
+                          {registration.full_name || 'N/A'}
                         </TableCell>
-                        <TableCell>{registration.mobile || 'N/A'}</TableCell>
-                        <TableCell>{registration.email || 'N/A'}</TableCell>
-                        <TableCell>{registration.age || 'N/A'}</TableCell>
-                        <TableCell>{registration.location || 'N/A'}</TableCell>
+                        <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
+                        <TableCell>{registration.customer_id || 'N/A'}</TableCell>
+                        <TableCell>{registration.ward || 'N/A'}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            registration.status === 'pending' 
+                              ? 'bg-yellow-100 text-yellow-800' 
+                              : 'bg-green-100 text-green-800'}`
+                          }>
+                            {registration.status || 'N/A'}
+                          </span>
+                        </TableCell>
                         <TableCell>
                           {registration.created_at 
                             ? new Date(registration.created_at).toLocaleDateString()

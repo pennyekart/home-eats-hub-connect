@@ -37,7 +37,7 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
       const { data, error } = await externalSupabase
         .from('registrations')
         .select('*')
-        .eq('mobile', mobile)
+        .eq('mobile_number', mobile)
         .single();
 
       if (error && error.code !== 'PGRST116') {
