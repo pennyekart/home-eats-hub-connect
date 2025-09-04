@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Phone } from 'lucide-react';
+import { Phone, AlertCircle } from 'lucide-react';
 
 interface MobileVerificationProps {
   onVerified: (userData: any) => void;
@@ -13,6 +14,11 @@ interface MobileVerificationProps {
 const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationProps) => {
   const [mobile, setMobile] = useState('');
   const [loading, setLoading] = useState(false);
+  const [alertDialog, setAlertDialog] = useState({
+    isOpen: false,
+    title: '',
+    description: ''
+  });
   const { toast } = useToast();
 
   const handleVerification = async () => {
@@ -47,20 +53,20 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
       if (data) {
         // Check if it's a free registration (fee = 0)
         if (data.fee === 0) {
-          toast({
+          setAlertDialog({
+            isOpen: true,
             title: "Access Denied",
-            description: "Free registrations are not allowed to access the system. Please upgrade your registration.",
-            variant: "destructive"
+            description: "Free registrations are not allowed to access the system. Please upgrade your registration."
           });
           return;
         }
 
         // Check if registration is approved
         if (data.status !== 'approved') {
-          toast({
-            title: "Access Denied", 
-            description: "Your registration is not yet approved. Please contact admin for approval.",
-            variant: "destructive"
+          setAlertDialog({
+            isOpen: true,
+            title: "Access Denied",
+            description: "Your registration is not yet approved. Please contact admin for approval."
           });
           return;
         }
@@ -117,6 +123,27 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
           </Button>
         </CardContent>
       </Card>
+
+      <AlertDialog open={alertDialog.isOpen} onOpenChange={(open) => setAlertDialog(prev => ({ ...prev, isOpen: open }))}>
+        <AlertDialogContent className="sm:max-w-[425px]">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive">
+                <AlertCircle className="h-5 w-5 text-destructive-foreground" />
+              </div>
+              <AlertDialogTitle className="text-destructive">{alertDialog.title}</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="pt-2">
+              {alertDialog.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setAlertDialog(prev => ({ ...prev, isOpen: false }))}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
