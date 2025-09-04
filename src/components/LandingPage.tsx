@@ -1,25 +1,23 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Plus, LogOut } from 'lucide-react';
-
 interface LandingPageProps {
   userData: any;
   onLogout: () => void;
 }
-
-const LandingPage = ({ userData, onLogout }: LandingPageProps) => {
+const LandingPage = ({
+  userData,
+  onLogout
+}: LandingPageProps) => {
   const handleSelectJob = () => {
     console.log('Navigate to job selection');
     // Add job selection logic here
   };
-
   const handleAddProgram = () => {
     console.log('Navigate to add program');
     // Add program addition logic here
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -37,12 +35,8 @@ const LandingPage = ({ userData, onLogout }: LandingPageProps) => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-foreground mb-4">
-            Empowering Women Through Self-Employment
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Choose your path to success. Select a job opportunity or add your own program to our platform.
-          </p>
+          <h2 className="font-bold text-foreground mb-4 text-3xl">സ്വയംതൊഴിൽ സാധ്യതകളുടെ മഹാലോകം </h2>
+          <p className="text-muted-foreground max-w-3xl mx-auto text-base">നിങ്ങൾക്ക് അനുയോജ്യമായ തൊഴിലവസരം ഏതാണെന്ന് 'ലഭ്യമായ തൊഴിലവസരങ്ങൾ' എന്ന വിഭാഗത്തിൽ വിരലമർത്തിയാൽ കാണാവുന്നതാണ് </p>
         </div>
 
         {/* Action Cards */}
@@ -53,19 +47,11 @@ const LandingPage = ({ userData, onLogout }: LandingPageProps) => {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-job-card">
                 <Briefcase className="h-8 w-8 text-job-card-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold text-job-card-foreground">
-                Select Your Job
-              </CardTitle>
-              <CardDescription className="text-job-card-foreground/80">
-                Browse available job opportunities and find the perfect match for your skills
-              </CardDescription>
+              <CardTitle className="text-2xl font-bold text-job-card-foreground">ലഭ്യമായ തൊഴിലവസരങ്ങൾ</CardTitle>
+              <CardDescription className="text-job-card-foreground/80">ഇവിടെ വിരലമർത്തിയാൽ നിങ്ങൾക്ക് അനുയോജ്യമായ തൊഴിലവസരങ്ങൾ കണ്ടെത്താവുന്നതാണ് </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <Button 
-                onClick={handleSelectJob}
-                size="lg"
-                className="bg-job-card text-job-card-foreground hover:bg-job-card/90"
-              >
+              <Button onClick={handleSelectJob} size="lg" className="bg-job-card text-job-card-foreground hover:bg-job-card/90">
                 Browse Jobs
               </Button>
             </CardContent>
@@ -77,27 +63,17 @@ const LandingPage = ({ userData, onLogout }: LandingPageProps) => {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-program-card">
                 <Plus className="h-8 w-8 text-program-card-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold text-program-card-foreground">
-                Add Your Program
-              </CardTitle>
-              <CardDescription className="text-program-card-foreground/80">
-                Create and share your own self-employment program with other women
-              </CardDescription>
+              <CardTitle className="text-2xl font-bold text-program-card-foreground">പുതിയ പദ്ധതികൾ ചേർക്കാൻ </CardTitle>
+              <CardDescription className="text-program-card-foreground/80">നിങ്ങള്ക്ക് സ്വന്തമായി എന്തെങ്കിലും പദ്ധതിയുണ്ടെങ്കിൽ ഇവിടെ ചേർക്കാവുന്നതാണ് </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <Button 
-                onClick={handleAddProgram}
-                size="lg"
-                className="bg-program-card text-program-card-foreground hover:bg-program-card/90"
-              >
+              <Button onClick={handleAddProgram} size="lg" className="bg-program-card text-program-card-foreground hover:bg-program-card/90">
                 Add Program
               </Button>
             </CardContent>
           </Card>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default LandingPage;
