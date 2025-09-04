@@ -45,10 +45,31 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
       }
 
       if (data) {
+        // Check if it's a free registration (fee = 0)
+        if (data.fee === 0) {
+          toast({
+            title: "Access Denied",
+            description: "Free registrations are not allowed to access the system. Please upgrade your registration.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Check if registration is approved
+        if (data.status !== 'approved') {
+          toast({
+            title: "Access Denied", 
+            description: "Your registration is not yet approved. Please contact admin for approval.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // If both checks pass, allow access
         onVerified(data);
         toast({
           title: "Success",
-          description: "Welcome! Registration found.",
+          description: "Welcome! Registration approved.",
         });
       } else {
         onNotRegistered();
