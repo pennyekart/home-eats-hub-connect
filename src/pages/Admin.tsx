@@ -159,18 +159,23 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Customer ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Mobile</TableHead>
-                    <TableHead>Customer ID</TableHead>
+                    <TableHead>Address</TableHead>
                     <TableHead>Ward</TableHead>
+                    <TableHead>Agent</TableHead>
+                    <TableHead>Fee</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Registration Date</TableHead>
+                    <TableHead>Approved Date</TableHead>
+                    <TableHead>Expiry Date</TableHead>
+                    <TableHead>Created</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
+                      <TableCell colSpan={11} className="text-center py-8">
                         <div className="flex items-center justify-center">
                           <RefreshCw className="h-6 w-6 animate-spin mr-2" />
                           Loading registrations...
@@ -179,7 +184,7 @@ const Admin = () => {
                     </TableRow>
                   ) : filteredRegistrations.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                         No registrations found
                       </TableCell>
                     </TableRow>
@@ -187,19 +192,40 @@ const Admin = () => {
                     filteredRegistrations.map((registration, index) => (
                       <TableRow key={registration.id || index}>
                         <TableCell className="font-medium">
-                          {registration.full_name || 'N/A'}
+                          {registration.customer_id || 'N/A'}
                         </TableCell>
+                        <TableCell>{registration.full_name || 'N/A'}</TableCell>
                         <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
-                        <TableCell>{registration.customer_id || 'N/A'}</TableCell>
+                        <TableCell className="max-w-xs truncate" title={registration.address}>
+                          {registration.address || 'N/A'}
+                        </TableCell>
                         <TableCell>{registration.ward || 'N/A'}</TableCell>
+                        <TableCell>{registration.agent || 'N/A'}</TableCell>
+                        <TableCell>{registration.fee ? `₹${registration.fee}` : 'N/A'}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs ${
                             registration.status === 'pending' 
                               ? 'bg-yellow-100 text-yellow-800' 
-                              : 'bg-green-100 text-green-800'}`
+                              : registration.status === 'approved'
+                              ? 'bg-green-100 text-green-800'
+                              : registration.status === 'rejected'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'}`
                           }>
                             {registration.status || 'N/A'}
                           </span>
+                        </TableCell>
+                        <TableCell>
+                          {registration.approved_date 
+                            ? new Date(registration.approved_date).toLocaleDateString()
+                            : 'N/A'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {registration.expiry_date 
+                            ? new Date(registration.expiry_date).toLocaleDateString()
+                            : 'N/A'
+                          }
                         </TableCell>
                         <TableCell>
                           {registration.created_at 
