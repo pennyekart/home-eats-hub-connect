@@ -42,7 +42,13 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
       
       const { data, error } = await externalSupabase
         .from('registrations')
-        .select('*')
+        .select(`
+          *,
+          categories!category_id(
+            name_english,
+            name_malayalam
+          )
+        `)
         .eq('mobile_number', mobile)
         .single();
 
@@ -71,8 +77,14 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
           return;
         }
 
-        // If both checks pass, allow access
-        onVerified(data);
+        // If both checks pass, prepare user data with proper field mapping
+        const userData = {
+          ...data,
+          name: data.full_name || data.name,
+          applied_category: data.categories?.name_english || data.categories?.name_malayalam || 'N/A'
+        };
+        
+        onVerified(userData);
         toast({
           title: "Success",
           description: "Welcome! Registration approved.",
