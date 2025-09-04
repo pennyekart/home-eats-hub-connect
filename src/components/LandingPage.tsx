@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Plus, LogOut } from 'lucide-react';
+import { Briefcase, Plus, LogOut, User, Phone, MapPin, FileText } from 'lucide-react';
 interface LandingPageProps {
   userData: any;
   onLogout: () => void;
@@ -33,7 +33,60 @@ const LandingPage = ({
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8">
+        {/* Profile Section */}
+        <div className="max-w-4xl mx-auto mb-12">
+          <Card className="border-primary/20 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary">
+                  <User className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl text-foreground">{userData?.name || 'User Name'}</CardTitle>
+                  <CardDescription className="text-muted-foreground">Profile Details</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <Phone className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Mobile Number</p>
+                      <p className="font-semibold text-foreground">{userData?.mobile_number || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Panchayath</p>
+                      <p className="font-semibold text-foreground">{userData?.panchayath || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Ward</p>
+                      <p className="font-semibold text-foreground">{userData?.ward || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Applied Category</p>
+                      <p className="font-semibold text-foreground capitalize">{userData?.applied_category || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="text-center mb-12">
           <h2 className="font-bold text-foreground mb-4 text-3xl">സ്വയംതൊഴിൽ സാധ്യതകളുടെ മഹാലോകം </h2>
           <p className="text-muted-foreground max-w-3xl mx-auto text-base">നിങ്ങൾക്ക് അനുയോജ്യമായ തൊഴിലവസരം ഏതാണെന്ന് 'ലഭ്യമായ തൊഴിലവസരങ്ങൾ' എന്ന വിഭാഗത്തിൽ വിരലമർത്തിയാൽ കാണാവുന്നതാണ് </p>
