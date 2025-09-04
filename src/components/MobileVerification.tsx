@@ -47,6 +47,10 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
           categories!category_id(
             name_english,
             name_malayalam
+          ),
+          panchayaths!panchayath_id(
+            name_english,
+            name_malayalam
           )
         `)
         .eq('mobile_number', mobile)
@@ -81,7 +85,8 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
         const userData = {
           ...data,
           name: data.full_name || data.name,
-          applied_category: data.categories?.name_english || data.categories?.name_malayalam || 'N/A'
+          applied_category: data.categories?.name_english || data.categories?.name_malayalam || 'N/A',
+          panchayath: data.panchayaths?.name_english || data.panchayaths?.name_malayalam || 'N/A'
         };
         
         onVerified(userData);

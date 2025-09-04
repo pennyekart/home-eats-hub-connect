@@ -24,7 +24,7 @@ const Admin = () => {
       
       const { data, error } = await externalSupabase
         .from('categories')
-        .select('category_id, *')
+        .select('id, *')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -56,7 +56,11 @@ const Admin = () => {
       
       const { data, error } = await externalSupabase
         .from('registrations')
-        .select('*, categories!category_id(name_english, name_malayalam)')
+        .select(`
+          *, 
+          categories!category_id(name_english, name_malayalam),
+          panchayaths!panchayath_id(name_english, name_malayalam)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -163,9 +167,9 @@ const Admin = () => {
                     <TableHead>Name</TableHead>
                     <TableHead>Mobile</TableHead>
                     <TableHead>Address</TableHead>
+                    <TableHead>Panchayath</TableHead>
                     <TableHead>Ward</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead>Agent</TableHead>
                     <TableHead>Fee</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Approved Date</TableHead>
@@ -200,11 +204,13 @@ const Admin = () => {
                         <TableCell className="max-w-xs truncate" title={registration.address}>
                           {registration.address || 'N/A'}
                         </TableCell>
+                        <TableCell className="max-w-xs truncate" title={registration.panchayaths?.name_english}>
+                          {registration.panchayaths?.name_english || registration.panchayaths?.name_malayalam || 'N/A'}
+                        </TableCell>
                         <TableCell>{registration.ward || 'N/A'}</TableCell>
                         <TableCell className="max-w-xs truncate" title={registration.categories?.name_english}>
                           {registration.categories?.name_english || registration.categories?.name_malayalam || 'N/A'}
                         </TableCell>
-                        <TableCell>{registration.agent || 'N/A'}</TableCell>
                         <TableCell>{registration.fee ? `₹${registration.fee}` : 'N/A'}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs ${
@@ -259,7 +265,7 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Category ID</TableHead>
+                    <TableHead>ID</TableHead>
                     <TableHead>English Name</TableHead>
                     <TableHead>Malayalam Name</TableHead>
                     <TableHead>Description</TableHead>
@@ -288,9 +294,9 @@ const Admin = () => {
                     </TableRow>
                   ) : (
                      categories.map((category, index) => (
-                      <TableRow key={category.category_id || category.id || index}>
+                      <TableRow key={category.id || index}>
                         <TableCell className="font-medium text-primary">
-                          {category.category_id || 'N/A'}
+                          {category.id || 'N/A'}
                         </TableCell>
                         <TableCell className="font-medium">
                           {category.name_english || 'N/A'}
