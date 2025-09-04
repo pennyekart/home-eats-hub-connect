@@ -24,7 +24,7 @@ const Admin = () => {
       
       const { data, error } = await externalSupabase
         .from('categories')
-        .select('*')
+        .select('category_id, *')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -56,7 +56,7 @@ const Admin = () => {
       
       const { data, error } = await externalSupabase
         .from('registrations')
-        .select('*')
+        .select('*, categories!category_id(name_english, name_malayalam)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -164,6 +164,7 @@ const Admin = () => {
                     <TableHead>Mobile</TableHead>
                     <TableHead>Address</TableHead>
                     <TableHead>Ward</TableHead>
+                    <TableHead>Category</TableHead>
                     <TableHead>Agent</TableHead>
                     <TableHead>Fee</TableHead>
                     <TableHead>Status</TableHead>
@@ -175,7 +176,7 @@ const Admin = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8">
+                      <TableCell colSpan={12} className="text-center py-8">
                         <div className="flex items-center justify-center">
                           <RefreshCw className="h-6 w-6 animate-spin mr-2" />
                           Loading registrations...
@@ -184,7 +185,7 @@ const Admin = () => {
                     </TableRow>
                   ) : filteredRegistrations.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                         No registrations found
                       </TableCell>
                     </TableRow>
@@ -200,6 +201,9 @@ const Admin = () => {
                           {registration.address || 'N/A'}
                         </TableCell>
                         <TableCell>{registration.ward || 'N/A'}</TableCell>
+                        <TableCell className="max-w-xs truncate" title={registration.categories?.name_english}>
+                          {registration.categories?.name_english || registration.categories?.name_malayalam || 'N/A'}
+                        </TableCell>
                         <TableCell>{registration.agent || 'N/A'}</TableCell>
                         <TableCell>{registration.fee ? `₹${registration.fee}` : 'N/A'}</TableCell>
                         <TableCell>
@@ -255,6 +259,7 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Category ID</TableHead>
                     <TableHead>English Name</TableHead>
                     <TableHead>Malayalam Name</TableHead>
                     <TableHead>Description</TableHead>
@@ -268,7 +273,7 @@ const Admin = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
+                      <TableCell colSpan={9} className="text-center py-8">
                         <div className="flex items-center justify-center">
                           <RefreshCw className="h-6 w-6 animate-spin mr-2" />
                           Loading categories...
@@ -277,13 +282,16 @@ const Admin = () => {
                     </TableRow>
                   ) : categories.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                         No categories found
                       </TableCell>
                     </TableRow>
                   ) : (
-                    categories.map((category, index) => (
-                      <TableRow key={category.id || index}>
+                     categories.map((category, index) => (
+                      <TableRow key={category.category_id || category.id || index}>
+                        <TableCell className="font-medium text-primary">
+                          {category.category_id || 'N/A'}
+                        </TableCell>
                         <TableCell className="font-medium">
                           {category.name_english || 'N/A'}
                         </TableCell>
