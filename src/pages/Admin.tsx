@@ -255,9 +255,12 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
+                    <TableHead>English Name</TableHead>
+                    <TableHead>Malayalam Name</TableHead>
                     <TableHead>Description</TableHead>
-                    <TableHead>Fee</TableHead>
+                    <TableHead>Actual Fee</TableHead>
+                    <TableHead>Offer Fee</TableHead>
+                    <TableHead>Expiry Days</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created Date</TableHead>
                   </TableRow>
@@ -265,7 +268,7 @@ const Admin = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                      <TableCell colSpan={8} className="text-center py-8">
                         <div className="flex items-center justify-center">
                           <RefreshCw className="h-6 w-6 animate-spin mr-2" />
                           Loading categories...
@@ -274,7 +277,7 @@ const Admin = () => {
                     </TableRow>
                   ) : categories.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         No categories found
                       </TableCell>
                     </TableRow>
@@ -282,17 +285,30 @@ const Admin = () => {
                     categories.map((category, index) => (
                       <TableRow key={category.id || index}>
                         <TableCell className="font-medium">
-                          {category.name || 'N/A'}
+                          {category.name_english || 'N/A'}
                         </TableCell>
-                        <TableCell>{category.description || 'N/A'}</TableCell>
-                        <TableCell>{category.fee ? `₹${category.fee}` : 'N/A'}</TableCell>
+                        <TableCell>{category.name_malayalam || 'N/A'}</TableCell>
+                        <TableCell className="max-w-xs" title={category.description}>
+                          <div className="truncate">
+                            {category.description || 'N/A'}
+                          </div>
+                        </TableCell>
+                        <TableCell>{category.actual_fee ? `₹${category.actual_fee}` : 'N/A'}</TableCell>
+                        <TableCell className="font-medium text-green-600">
+                          {category.offer_fee ? `₹${category.offer_fee}` : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            {category.expiry_days || 0} days
+                          </span>
+                        </TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs ${
-                            category.status === 'active' 
+                            category.is_active 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-red-100 text-red-800'}`
                           }>
-                            {category.status || 'N/A'}
+                            {category.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </TableCell>
                         <TableCell>
