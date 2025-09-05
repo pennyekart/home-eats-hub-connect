@@ -9,9 +9,41 @@ import { Search, RefreshCw, Users, Tag } from 'lucide-react';
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [panchayaths, setPanchayaths] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
+
+  const fetchPanchayaths = async () => {
+    try {
+      // Create a Supabase client to fetch from external database
+      const { createClient } = await import('@supabase/supabase-js');
+      const externalSupabase = createClient(
+        'https://mbvxiphgomdtoaqzmbgv.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idnhpcGhnb21kdG9hcXptYmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MjI5MzAsImV4cCI6MjA2OTk5ODkzMH0.k4JOmqn3q0bu2_txC5XxBfgb9YDyqrdK6YmJwSsjKlo'
+      );
+      
+      const { data, error } = await externalSupabase
+        .from('panchayaths')
+        .select('id, name_english, name_malayalam')
+        .order('name_english', { ascending: true });
+
+      if (error) throw error;
+
+      setPanchayaths(data || []);
+      toast({
+        title: "Success",
+        description: `Loaded ${data?.length || 0} panchayaths`,
+      });
+    } catch (error) {
+      console.error('Panchayaths fetch error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch panchayaths",
+        variant: "destructive"
+      });
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -85,6 +117,7 @@ const Admin = () => {
   useEffect(() => {
     fetchRegistrations();
     fetchCategories();
+    fetchPanchayaths();
   }, []);
 
   const filteredRegistrations = registrations.filter(reg =>
@@ -92,6 +125,12 @@ const Admin = () => {
     reg.mobile_number?.includes(searchTerm) ||
     reg.address?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Helper function to get panchayath name by ID
+  const getPanchayathName = (panchayathId: string) => {
+    const panchayath = panchayaths.find(p => p.id === panchayathId);
+    return panchayath?.name_english || panchayath?.name_malayalam || 'N/A';
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -145,7 +184,7 @@ const Admin = () => {
                   className="pl-10"
                 />
               </div>
-              <Button onClick={() => { fetchRegistrations(); fetchCategories(); }} disabled={loading}>
+              <Button onClick={() => { fetchRegistrations(); fetchCategories(); fetchPanchayaths(); }} disabled={loading}>
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
@@ -204,8 +243,8 @@ const Admin = () => {
                         <TableCell className="max-w-xs truncate" title={registration.address}>
                           {registration.address || 'N/A'}
                         </TableCell>
-                        <TableCell className="max-w-xs truncate" title={registration.panchayath_id}>
-                          {registration.panchayath_id || 'N/A'}
+                        <TableCell className="max-w-xs truncate" title={getPanchayathName(registration.panchayath_id)}>
+                          {getPanchayathName(registration.panchayath_id)}
                         </TableCell>
                         <TableCell>{registration.ward || 'N/A'}</TableCell>
                         <TableCell className="max-w-xs truncate" title={registration.categories?.name_english}>
