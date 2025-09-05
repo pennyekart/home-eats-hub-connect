@@ -289,60 +289,28 @@ const Admin = () => {
                 <CardTitle>Registrations ({filteredRegistrations.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Customer ID</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Mobile</TableHead>
-                        <TableHead>Address</TableHead>
-                        <TableHead>Panchayath</TableHead>
-                        <TableHead>Ward</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Fee</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Approved Date</TableHead>
-                        <TableHead>Expiry Date</TableHead>
-                        <TableHead>Created</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        <TableRow>
-                          <TableCell colSpan={12} className="text-center py-8">
-                            <div className="flex items-center justify-center">
-                              <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                              Loading registrations...
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ) : filteredRegistrations.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
-                            No registrations found
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        filteredRegistrations.map((registration, index) => (
-                          <TableRow key={registration.id || index}>
-                            <TableCell className="font-medium">
-                              {registration.customer_id || 'N/A'}
-                            </TableCell>
-                            <TableCell>{registration.full_name || 'N/A'}</TableCell>
-                            <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
-                            <TableCell className="max-w-xs truncate" title={registration.address}>
-                              {registration.address || 'N/A'}
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate" title={getPanchayathName(registration.panchayath_id)}>
-                              {getPanchayathName(registration.panchayath_id)}
-                            </TableCell>
-                            <TableCell>{registration.ward || 'N/A'}</TableCell>
-                            <TableCell className="max-w-xs truncate" title={registration.categories?.name_english}>
-                              {registration.categories?.name_english || registration.categories?.name_malayalam || 'N/A'}
-                            </TableCell>
-                            <TableCell>{registration.fee ? `₹${registration.fee}` : 'N/A'}</TableCell>
-                            <TableCell>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {loading ? (
+                    <div className="col-span-full flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                      Loading registrations...
+                    </div>
+                  ) : filteredRegistrations.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      No registrations found
+                    </div>
+                  ) : (
+                    filteredRegistrations.map((registration, index) => (
+                      <Card 
+                        key={registration.id || index} 
+                        className="cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-l-primary"
+                      >
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-semibold text-sm truncate">
+                                {registration.full_name || 'N/A'}
+                              </h3>
                               <span className={`px-2 py-1 rounded-full text-xs ${
                                 registration.status === 'pending' 
                                   ? 'bg-yellow-100 text-yellow-800' 
@@ -354,30 +322,53 @@ const Admin = () => {
                               }>
                                 {registration.status || 'N/A'}
                               </span>
-                            </TableCell>
-                            <TableCell>
-                              {registration.approved_date 
-                                ? new Date(registration.approved_date).toLocaleDateString()
-                                : 'N/A'
-                              }
-                            </TableCell>
-                            <TableCell>
-                              {registration.expiry_date 
-                                ? new Date(registration.expiry_date).toLocaleDateString()
-                                : 'N/A'
-                              }
-                            </TableCell>
-                            <TableCell>
-                              {registration.created_at 
-                                ? new Date(registration.created_at).toLocaleDateString()
-                                : 'N/A'
-                              }
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Mobile:</span>
+                                <span>{registration.mobile_number || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">ID:</span>
+                                <span>{registration.customer_id || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Category:</span>
+                                <span className="truncate">{registration.categories?.name_english || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Panchayath:</span>
+                                <span className="truncate">{getPanchayathName(registration.panchayath_id)}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Ward:</span>
+                                <span>{registration.ward || 'N/A'}</span>
+                              </div>
+                              {registration.fee && (
+                                <div className="flex items-center gap-1">
+                                  <span className="font-medium">Fee:</span>
+                                  <span className="text-green-600 font-medium">₹{registration.fee}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Created:</span>
+                                <span>{registration.created_at ? new Date(registration.created_at).toLocaleDateString() : 'N/A'}</span>
+                              </div>
+                            </div>
+                            
+                            {registration.address && (
+                              <div className="pt-2 border-t">
+                                <p className="text-xs text-muted-foreground truncate" title={registration.address}>
+                                  <span className="font-medium">Address:</span> {registration.address}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -392,62 +383,28 @@ const Admin = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>English Name</TableHead>
-                        <TableHead>Malayalam Name</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Actual Fee</TableHead>
-                        <TableHead>Offer Fee</TableHead>
-                        <TableHead>Expiry Days</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Created Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8">
-                            <div className="flex items-center justify-center">
-                              <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                              Loading categories...
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ) : categories.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                            No categories found
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                         categories.map((category, index) => (
-                          <TableRow key={category.id || index}>
-                            <TableCell className="font-medium text-primary">
-                              {category.id || 'N/A'}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {category.name_english || 'N/A'}
-                            </TableCell>
-                            <TableCell>{category.name_malayalam || 'N/A'}</TableCell>
-                            <TableCell className="max-w-xs" title={category.description}>
-                              <div className="truncate">
-                                {category.description || 'N/A'}
-                              </div>
-                            </TableCell>
-                            <TableCell>{category.actual_fee ? `₹${category.actual_fee}` : 'N/A'}</TableCell>
-                            <TableCell className="font-medium text-green-600">
-                              {category.offer_fee ? `₹${category.offer_fee}` : 'N/A'}
-                            </TableCell>
-                            <TableCell>
-                              <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                                {category.expiry_days || 0} days
-                              </span>
-                            </TableCell>
-                            <TableCell>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {loading ? (
+                    <div className="col-span-full flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                      Loading categories...
+                    </div>
+                  ) : categories.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      No categories found
+                    </div>
+                  ) : (
+                    categories.map((category, index) => (
+                      <Card 
+                        key={category.id || index}
+                        className="cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-l-accent"
+                      >
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-semibold text-sm truncate">
+                                {category.name_english || 'N/A'}
+                              </h3>
                               <span className={`px-2 py-1 rounded-full text-xs ${
                                 category.is_active 
                                   ? 'bg-green-100 text-green-800' 
@@ -455,18 +412,49 @@ const Admin = () => {
                               }>
                                 {category.is_active ? 'Active' : 'Inactive'}
                               </span>
-                            </TableCell>
-                            <TableCell>
-                              {category.created_at 
-                                ? new Date(category.created_at).toLocaleDateString()
-                                : 'N/A'
-                              }
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">ID:</span>
+                                <span className="text-primary font-medium">{category.id || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Malayalam:</span>
+                                <span className="truncate">{category.name_malayalam || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Actual Fee:</span>
+                                <span>{category.actual_fee ? `₹${category.actual_fee}` : 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Offer Fee:</span>
+                                <span className="text-green-600 font-medium">{category.offer_fee ? `₹${category.offer_fee}` : 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Expiry:</span>
+                                <span className="px-1 py-0.5 rounded text-xs bg-blue-100 text-blue-800">
+                                  {category.expiry_days || 0} days
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Created:</span>
+                                <span>{category.created_at ? new Date(category.created_at).toLocaleDateString() : 'N/A'}</span>
+                              </div>
+                            </div>
+                            
+                            {category.description && (
+                              <div className="pt-2 border-t">
+                                <p className="text-xs text-muted-foreground truncate" title={category.description}>
+                                  <span className="font-medium">Description:</span> {category.description}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -574,67 +562,71 @@ const Admin = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Team Name</TableHead>
-                        <TableHead>Member Count</TableHead>
-                        <TableHead>Members</TableHead>
-                        <TableHead>Created Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {teams.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                            No teams created yet. Click "Create Team" to get started.
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        teams.map((team) => (
-                          <TableRow key={team.id}>
-                            <TableCell className="font-medium">{team.name}</TableCell>
-                            <TableCell>
-                              <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                                {team.member_count} members
-                              </span>
-                            </TableCell>
-                            <TableCell className="max-w-md">
-                              <div className="flex flex-wrap gap-1">
-                                {team.members.slice(0, 3).map((member: any, index: number) => (
-                                  <span 
-                                    key={index}
-                                    className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800"
-                                  >
-                                    {member.full_name}
-                                  </span>
-                                ))}
-                                {team.members.length > 3 && (
-                                  <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
-                                    +{team.members.length - 3} more
-                                  </span>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(team.created_at).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {teams.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      No teams created yet. Click "Create Team" to get started.
+                    </div>
+                  ) : (
+                    teams.map((team) => (
+                      <Card 
+                        key={team.id}
+                        className="cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-l-secondary"
+                      >
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-semibold text-sm truncate">
+                                {team.name}
+                              </h3>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => deleteTeam(team.id)}
+                                className="h-6 w-6 p-0"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3 w-3" />
                               </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-muted-foreground">Members:</span>
+                                <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                  {team.member_count} members
+                                </span>
+                              </div>
+                              
+                              <div className="text-xs text-muted-foreground">
+                                <span className="font-medium">Created:</span>
+                                <span className="ml-1">{new Date(team.created_at).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="pt-2 border-t">
+                              <p className="text-xs font-medium text-muted-foreground mb-2">Team Members:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {team.members.slice(0, 2).map((member: any, index: number) => (
+                                  <span 
+                                    key={index}
+                                    className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 truncate max-w-20"
+                                    title={member.full_name}
+                                  >
+                                    {member.full_name}
+                                  </span>
+                                ))}
+                                {team.members.length > 2 && (
+                                  <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
+                                    +{team.members.length - 2} more
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
