@@ -40,15 +40,11 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idnhpcGhnb21kdG9hcXptYmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MjI5MzAsImV4cCI6MjA2OTk5ODkzMH0.k4JOmqn3q0bu2_txC5XxBfgb9YDyqrdK6YmJwSsjKlo'
       );
       
-      const { data, error } = await externalSupabase
-        .from('registrations')
-        .select(`
+        const { data, error } = await externalSupabase
+          .from('registrations')
+          .select(`
           *,
           categories!category_id(
-            name_english,
-            name_malayalam
-          ),
-          panchayaths!panchayath_id(
             name_english,
             name_malayalam
           )
@@ -86,7 +82,7 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
           ...data,
           name: data.full_name || data.name,
           applied_category: data.categories?.name_english || data.categories?.name_malayalam || 'N/A',
-          panchayath: data.panchayaths?.name_english || data.panchayaths?.name_malayalam || 'N/A'
+          panchayath: data.panchayath_id || 'N/A'
         };
         
         onVerified(userData);
