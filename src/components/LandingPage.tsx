@@ -278,7 +278,7 @@ const LandingPage = ({
         </div>
 
         {/* Action Cards */}
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
           {/* Select Job Card */}
           <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg bg-gradient-job-selection border-0">
             <CardHeader className="text-center pb-6">
@@ -295,49 +295,14 @@ const LandingPage = ({
             </CardContent>
           </Card>
 
-          {/* Employment Categories Card */}
-          <Card className="group transition-all duration-300 hover:shadow-lg bg-gradient-to-br from-accent/10 to-secondary/10 border-0">
-            <CardHeader className="text-center pb-6">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
-                <Users className="h-8 w-8 text-accent-foreground" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-foreground">തൊഴിൽ വിഭാഗങ്ങൾ</CardTitle>
-              <CardDescription className="text-muted-foreground">നിങ്ങൾക്ക് അനുയോജ്യമായ വിഭാഗം തിരഞ്ഞെടുക്കുക</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(categorySubProjects).map(([category, subProjects]) => (
-                  <Card key={category} className="p-4 hover:shadow-md transition-all cursor-pointer border border-border/50">
-                    <div className="text-center mb-3">
-                      <h4 className="font-semibold text-foreground capitalize text-sm">{category}</h4>
-                    </div>
-                    <div className="space-y-2">
-                      {subProjects.map((subProject) => (
-                        <Button
-                          key={subProject}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCategorySelect(category, subProject)}
-                          className="w-full text-xs h-8 hover:bg-primary hover:text-primary-foreground"
-                        >
-                          {subProject}
-                        </Button>
-                      ))}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Add Program Card */}
           <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg bg-gradient-add-program border-0">
             <CardHeader className="text-center pb-6">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-program-card">
                 <Plus className="h-8 w-8 text-program-card-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold text-program-card-foreground">പുതിയ പദ്ധതികൾ ചേർക്കാൻ </CardTitle>
-              <CardDescription className="text-program-card-foreground/80">നിങ്ങള്ക്ക് സ്വന്തമായി എന്തെങ്കിലും പദ്ധതിയുണ്ടെങ്കിൽ ഇവിടെ ചേർക്കാവുന്നതാണ് </CardDescription>
+              <CardTitle className="text-2xl font-bold text-program-card-foreground">പുതിയ പദ്ധതികൾ ചേർക്കാൻ</CardTitle>
+              <CardDescription className="text-program-card-foreground/80">നിങ്ങള്ക്ക് സ്വന്തമായി എന്തെങ്കിലും പദ്ധതിയുണ്ടെങ്കിൽ ഇവിടെ ചേർക്കാവുന്നതാണ്</CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Button onClick={handleAddProgram} size="lg" className="bg-program-card text-program-card-foreground hover:bg-program-card/90">
