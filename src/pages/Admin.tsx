@@ -4,15 +4,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Search, RefreshCw, Users, Tag } from 'lucide-react';
+import { Search, RefreshCw, Users, Tag, UserPlus, Trash2 } from 'lucide-react';
 
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [panchayaths, setPanchayaths] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const { toast } = useToast();
 
   const fetchPanchayaths = async () => {
@@ -115,6 +122,64 @@ const Admin = () => {
     }
   };
 
+  const createTeam = async () => {
+    if (!newTeamName.trim() || selectedMembers.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please provide team name and select at least one member",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const selectedRegistrations = registrations.filter(reg => 
+        selectedMembers.includes(reg.id)
+      );
+
+      const newTeam = {
+        id: Date.now().toString(),
+        name: newTeamName,
+        members: selectedRegistrations,
+        created_at: new Date().toISOString(),
+        member_count: selectedRegistrations.length
+      };
+
+      setTeams(prev => [...prev, newTeam]);
+      setNewTeamName('');
+      setSelectedMembers([]);
+      setIsCreateTeamOpen(false);
+
+      toast({
+        title: "Success",
+        description: `Team "${newTeamName}" created with ${selectedRegistrations.length} members`,
+      });
+    } catch (error) {
+      console.error('Team creation error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create team",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteTeam = (teamId: string) => {
+    setTeams(prev => prev.filter(team => team.id !== teamId));
+    toast({
+      title: "Success",
+      description: "Team deleted successfully",
+    });
+  };
+
+  const toggleMemberSelection = (registrationId: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(registrationId)
+        ? prev.filter(id => id !== registrationId)
+        : [...prev, registrationId]
+    );
+  };
+
   useEffect(() => {
     fetchRegistrations();
     fetchCategories();
@@ -195,7 +260,7 @@ const Admin = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="registrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Registrations ({filteredRegistrations.length})
@@ -203,6 +268,10 @@ const Admin = () => {
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
               Categories ({categories.length})
+            </TabsTrigger>
+            <TabsTrigger value="teams" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Teams ({teams.length})
             </TabsTrigger>
           </TabsList>
 
@@ -384,6 +453,155 @@ const Admin = () => {
                                 ? new Date(category.created_at).toLocaleDateString()
                                 : 'N/A'
                               }
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="teams" className="mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <UserPlus className="h-5 w-5" />
+                    Teams ({teams.length})
+                  </CardTitle>
+                  <Dialog open={isCreateTeamOpen} onOpenChange={setIsCreateTeamOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Create Team
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Create New Team</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-6">
+                        <div>
+                          <Label htmlFor="teamName">Team Name</Label>
+                          <Input
+                            id="teamName"
+                            value={newTeamName}
+                            onChange={(e) => setNewTeamName(e.target.value)}
+                            placeholder="Enter team name..."
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label>Select Team Members</Label>
+                          <div className="mt-2 border rounded-md max-h-60 overflow-y-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-12">Select</TableHead>
+                                  <TableHead>Name</TableHead>
+                                  <TableHead>Mobile</TableHead>
+                                  <TableHead>Category</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {registrations.map((registration) => (
+                                  <TableRow key={registration.id}>
+                                    <TableCell>
+                                      <Checkbox
+                                        checked={selectedMembers.includes(registration.id)}
+                                        onCheckedChange={() => toggleMemberSelection(registration.id)}
+                                      />
+                                    </TableCell>
+                                    <TableCell className="font-medium">
+                                      {registration.full_name || 'N/A'}
+                                    </TableCell>
+                                    <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
+                                    <TableCell>
+                                      {registration.categories?.name_english || 'N/A'}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Selected: {selectedMembers.length} members
+                          </p>
+                        </div>
+                        
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsCreateTeamOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={createTeam}>
+                            Create Team
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Team Name</TableHead>
+                        <TableHead>Member Count</TableHead>
+                        <TableHead>Members</TableHead>
+                        <TableHead>Created Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {teams.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            No teams created yet. Click "Create Team" to get started.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        teams.map((team) => (
+                          <TableRow key={team.id}>
+                            <TableCell className="font-medium">{team.name}</TableCell>
+                            <TableCell>
+                              <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                {team.member_count} members
+                              </span>
+                            </TableCell>
+                            <TableCell className="max-w-md">
+                              <div className="flex flex-wrap gap-1">
+                                {team.members.slice(0, 3).map((member: any, index: number) => (
+                                  <span 
+                                    key={index}
+                                    className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800"
+                                  >
+                                    {member.full_name}
+                                  </span>
+                                ))}
+                                {team.members.length > 3 && (
+                                  <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
+                                    +{team.members.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(team.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => deleteTeam(team.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))
