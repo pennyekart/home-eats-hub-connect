@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Briefcase, Plus, LogOut, User, Phone, MapPin, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { Briefcase, Plus, LogOut, User, Phone, MapPin, FileText, ChevronDown, ChevronUp, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 interface LandingPageProps {
   userData: any;
@@ -27,6 +27,13 @@ const LandingPage = ({
 
   const employmentCategories = ['farmelife', 'entrelife', 'organelife', 'foodelife'];
   const subProjects = ['Sub Project 1', 'Sub Project 2', 'Sub Project 3', 'Sub Project 4'];
+  
+  const categorySubProjects = {
+    farmelife: ['Organic Farming', 'Dairy Farming', 'Poultry Farming', 'Fish Farming'],
+    entrelife: ['Small Business', 'Online Store', 'Service Business', 'Consulting'],
+    organelife: ['Organic Products', 'Natural Medicine', 'Eco Farming', 'Green Energy'],
+    foodelife: ['Restaurant', 'Catering', 'Food Processing', 'Bakery']
+  };
 
   const handleSelectJob = () => {
     console.log('Navigate to job selection');
@@ -34,6 +41,15 @@ const LandingPage = ({
   };
 
   const handleAddProgram = () => {
+    setShowAddProgramForm(true);
+  };
+
+  const handleCategorySelect = (category: string, subProject: string) => {
+    setProgramForm(prev => ({
+      ...prev,
+      employmentCategory: category,
+      subProject: subProject
+    }));
     setShowAddProgramForm(true);
   };
 
@@ -205,7 +221,7 @@ const LandingPage = ({
                   
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">Employment Category *</label>
-                    <Select onValueChange={(value) => handleFormChange('employmentCategory', value)}>
+                    <Select onValueChange={(value) => handleFormChange('employmentCategory', value)} value={programForm.employmentCategory}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select employment category" />
                       </SelectTrigger>
@@ -221,16 +237,23 @@ const LandingPage = ({
                   
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">Sub Project</label>
-                    <Select onValueChange={(value) => handleFormChange('subProject', value)}>
+                    <Select onValueChange={(value) => handleFormChange('subProject', value)} value={programForm.subProject}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select sub project" />
                       </SelectTrigger>
                       <SelectContent>
-                        {subProjects.map((project) => (
-                          <SelectItem key={project} value={project}>
-                            {project}
-                          </SelectItem>
-                        ))}
+                        {programForm.employmentCategory && categorySubProjects[programForm.employmentCategory as keyof typeof categorySubProjects] ? 
+                          categorySubProjects[programForm.employmentCategory as keyof typeof categorySubProjects].map((project) => (
+                            <SelectItem key={project} value={project}>
+                              {project}
+                            </SelectItem>
+                          )) :
+                          subProjects.map((project) => (
+                            <SelectItem key={project} value={project}>
+                              {project}
+                            </SelectItem>
+                          ))
+                        }
                       </SelectContent>
                     </Select>
                   </div>
@@ -255,7 +278,7 @@ const LandingPage = ({
         </div>
 
         {/* Action Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
           {/* Select Job Card */}
           <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg bg-gradient-job-selection border-0">
             <CardHeader className="text-center pb-6">
@@ -269,6 +292,41 @@ const LandingPage = ({
               <Button onClick={handleSelectJob} size="lg" className="bg-job-card text-job-card-foreground hover:bg-job-card/90">
                 Browse Jobs
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Employment Categories Card */}
+          <Card className="group transition-all duration-300 hover:shadow-lg bg-gradient-to-br from-accent/10 to-secondary/10 border-0">
+            <CardHeader className="text-center pb-6">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
+                <Users className="h-8 w-8 text-accent-foreground" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-foreground">തൊഴിൽ വിഭാഗങ്ങൾ</CardTitle>
+              <CardDescription className="text-muted-foreground">നിങ്ങൾക്ക് അനുയോജ്യമായ വിഭാഗം തിരഞ്ഞെടുക്കുക</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(categorySubProjects).map(([category, subProjects]) => (
+                  <Card key={category} className="p-4 hover:shadow-md transition-all cursor-pointer border border-border/50">
+                    <div className="text-center mb-3">
+                      <h4 className="font-semibold text-foreground capitalize text-sm">{category}</h4>
+                    </div>
+                    <div className="space-y-2">
+                      {subProjects.map((subProject) => (
+                        <Button
+                          key={subProject}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCategorySelect(category, subProject)}
+                          className="w-full text-xs h-8 hover:bg-primary hover:text-primary-foreground"
+                        >
+                          {subProject}
+                        </Button>
+                      ))}
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
