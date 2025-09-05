@@ -77,12 +77,30 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
           return;
         }
 
+        // Fetch panchayath details if panchayath_id exists
+        let panchayathName = 'N/A';
+        if (data.panchayath_id) {
+          try {
+            const { data: panchayathData, error: panchayathError } = await externalSupabase
+              .from('panchayaths')
+              .select('name_english, name_malayalam')
+              .eq('id', data.panchayath_id)
+              .single();
+            
+            if (!panchayathError && panchayathData) {
+              panchayathName = panchayathData.name_english || panchayathData.name_malayalam || 'N/A';
+            }
+          } catch (error) {
+            console.log('Could not fetch panchayath details:', error);
+          }
+        }
+
         // If both checks pass, prepare user data with proper field mapping
         const userData = {
           ...data,
           name: data.full_name || data.name,
           applied_category: data.categories?.name_english || data.categories?.name_malayalam || 'N/A',
-          panchayath: data.panchayath_id || 'N/A'
+          panchayath: panchayathName
         };
         
         onVerified(userData);
