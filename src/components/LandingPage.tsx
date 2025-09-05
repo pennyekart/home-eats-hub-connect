@@ -304,10 +304,43 @@ const LandingPage = ({
               <CardTitle className="text-2xl font-bold text-program-card-foreground">പുതിയ പദ്ധതികൾ ചേർക്കാൻ</CardTitle>
               <CardDescription className="text-program-card-foreground/80">നിങ്ങള്ക്ക് സ്വന്തമായി എന്തെങ്കിലും പദ്ധതിയുണ്ടെങ്കിൽ ഇവിടെ ചേർക്കാവുന്നതാണ്</CardDescription>
             </CardHeader>
-            <CardContent className="text-center">
-              <Button onClick={handleAddProgram} size="lg" className="bg-program-card text-program-card-foreground hover:bg-program-card/90">
-                Add Program
-              </Button>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Employment Categories */}
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold text-program-card-foreground mb-2">തൊഴിൽ വിഭാഗങ്ങൾ</h3>
+                  <p className="text-sm text-program-card-foreground/80">നിങ്ങൾക്ക് അനുയോജ്യമായ വിഭാഗം തിരഞ്ഞെടുക്കുക</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(categorySubProjects).map(([category, subProjects]) => (
+                    <Card key={category} className="p-3 hover:shadow-md transition-all bg-card/50 border border-program-card-foreground/20">
+                      <div className="text-center mb-3">
+                        <h4 className="font-semibold text-foreground capitalize text-sm">{category}</h4>
+                      </div>
+                      <div className="space-y-2">
+                        {subProjects.map((subProject) => (
+                          <Button
+                            key={subProject}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCategorySelect(category, subProject)}
+                            className="w-full text-xs h-8 hover:bg-program-card hover:text-program-card-foreground"
+                          >
+                            {subProject}
+                          </Button>
+                        ))}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                
+                <div className="text-center pt-4 border-t border-program-card-foreground/20">
+                  <Button onClick={handleAddProgram} size="lg" className="bg-program-card text-program-card-foreground hover:bg-program-card/90">
+                    Add Custom Program
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
