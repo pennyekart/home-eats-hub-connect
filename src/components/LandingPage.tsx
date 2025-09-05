@@ -14,7 +14,7 @@ const LandingPage = ({
   userData,
   onLogout
 }: LandingPageProps) => {
-  const [isProfileCollapsed, setIsProfileCollapsed] = useState(false);
+  const [isProfileCollapsed, setIsProfileCollapsed] = useState(true);
   const [showAddProgramForm, setShowAddProgramForm] = useState(false);
   const [programForm, setProgramForm] = useState({
     programName: '',
