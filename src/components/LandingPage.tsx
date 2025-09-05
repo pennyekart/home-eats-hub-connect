@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Briefcase, Plus, LogOut, User, Phone, MapPin, FileText, ChevronDown, ChevronUp, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 interface LandingPageProps {
@@ -16,6 +17,7 @@ const LandingPage = ({
 }: LandingPageProps) => {
   const [isProfileCollapsed, setIsProfileCollapsed] = useState(true);
   const [showAddProgramForm, setShowAddProgramForm] = useState(false);
+  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [programForm, setProgramForm] = useState({
     programName: '',
     description: '',
@@ -296,53 +298,77 @@ const LandingPage = ({
           </Card>
 
           {/* Add Program Card */}
-          <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg bg-gradient-add-program border-0">
-            <CardHeader className="text-center pb-6">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-program-card">
-                <Plus className="h-8 w-8 text-program-card-foreground" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-program-card-foreground">പുതിയ പദ്ധതികൾ ചേർക്കാൻ</CardTitle>
-              <CardDescription className="text-program-card-foreground/80">നിങ്ങള്ക്ക് സ്വന്തമായി എന്തെങ്കിലും പദ്ധതിയുണ്ടെങ്കിൽ ഇവിടെ ചേർക്കാവുന്നതാണ്</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+          <Dialog open={showCategoriesModal} onOpenChange={setShowCategoriesModal}>
+            <DialogTrigger asChild>
+              <Card className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg bg-gradient-add-program border-0">
+                <CardHeader className="text-center pb-6">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-program-card">
+                    <Plus className="h-8 w-8 text-program-card-foreground" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-program-card-foreground">പുതിയ പദ്ധതികൾ ചേർക്കാൻ</CardTitle>
+                  <CardDescription className="text-program-card-foreground/80">നിങ്ങള്ക്ക് സ്വന്തമായി എന്തെങ്കിലും പദ്ധതിയുണ്ടെങ്കിൽ ഇവിടെ ചേർക്കാവുന്നതാണ്</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <Button size="lg" className="bg-program-card text-program-card-foreground hover:bg-program-card/90">
+                    Open Categories
+                  </Button>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl text-center">പുതിയ പദ്ധതികൾ ചേർക്കാൻ</DialogTitle>
+                <DialogDescription className="text-center">
+                  നിങ്ങൾക്ക് അനുയോജ്യമായ വിഭാഗം തിരഞ്ഞെടുക്കുക അല്ലെങ്കിൽ കസ്റ്റം പ്രോഗ്രാം ചേർക്കുക
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6">
                 {/* Employment Categories */}
-                <div className="text-center mb-4">
-                  <h3 className="text-lg font-semibold text-program-card-foreground mb-2">തൊഴിൽ വിഭാഗങ്ങൾ</h3>
-                  <p className="text-sm text-program-card-foreground/80">നിങ്ങൾക്ക് അനുയോജ്യമായ വിഭാഗം തിരഞ്ഞെടുക്കുക</p>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-4 text-center">തൊഴിൽ വിഭാഗങ്ങൾ</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {Object.entries(categorySubProjects).map(([category, subProjects]) => (
+                      <Card key={category} className="p-4 hover:shadow-md transition-all">
+                        <div className="text-center mb-3">
+                          <h4 className="font-semibold text-foreground capitalize text-lg">{category}</h4>
+                        </div>
+                        <div className="space-y-2">
+                          {subProjects.map((subProject) => (
+                            <Button
+                              key={subProject}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                handleCategorySelect(category, subProject);
+                                setShowCategoriesModal(false);
+                              }}
+                              className="w-full text-sm h-10 hover:bg-primary hover:text-primary-foreground"
+                            >
+                              {subProject}
+                            </Button>
+                          ))}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(categorySubProjects).map(([category, subProjects]) => (
-                    <Card key={category} className="p-3 hover:shadow-md transition-all bg-card/50 border border-program-card-foreground/20">
-                      <div className="text-center mb-3">
-                        <h4 className="font-semibold text-foreground capitalize text-sm">{category}</h4>
-                      </div>
-                      <div className="space-y-2">
-                        {subProjects.map((subProject) => (
-                          <Button
-                            key={subProject}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCategorySelect(category, subProject)}
-                            className="w-full text-xs h-8 hover:bg-program-card hover:text-program-card-foreground"
-                          >
-                            {subProject}
-                          </Button>
-                        ))}
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-                
-                <div className="text-center pt-4 border-t border-program-card-foreground/20">
-                  <Button onClick={handleAddProgram} size="lg" className="bg-program-card text-program-card-foreground hover:bg-program-card/90">
+                <div className="text-center pt-4 border-t">
+                  <Button 
+                    onClick={() => {
+                      handleAddProgram();
+                      setShowCategoriesModal(false);
+                    }} 
+                    size="lg" 
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
                     Add Custom Program
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
     </div>;
