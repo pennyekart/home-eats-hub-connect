@@ -1,6 +1,11 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Plus, LogOut, User, Phone, MapPin, FileText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Briefcase, Plus, LogOut, User, Phone, MapPin, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 interface LandingPageProps {
   userData: any;
   onLogout: () => void;
@@ -9,13 +14,68 @@ const LandingPage = ({
   userData,
   onLogout
 }: LandingPageProps) => {
+  const [isProfileCollapsed, setIsProfileCollapsed] = useState(false);
+  const [showAddProgramForm, setShowAddProgramForm] = useState(false);
+  const [programForm, setProgramForm] = useState({
+    programName: '',
+    description: '',
+    qualifications: '',
+    employmentCategory: '',
+    subProject: ''
+  });
+  const { toast } = useToast();
+
+  const employmentCategories = ['farmelife', 'entrelife', 'organelife', 'foodelife'];
+  const subProjects = ['Sub Project 1', 'Sub Project 2', 'Sub Project 3', 'Sub Project 4'];
+
   const handleSelectJob = () => {
     console.log('Navigate to job selection');
     // Add job selection logic here
   };
+
   const handleAddProgram = () => {
-    console.log('Navigate to add program');
-    // Add program addition logic here
+    setShowAddProgramForm(true);
+  };
+
+  const handleProgramSubmit = async () => {
+    if (!programForm.programName || !programForm.description || !programForm.employmentCategory) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Here you would submit the program data to your database
+      console.log('Program data:', programForm);
+      
+      toast({
+        title: "Success",
+        description: "Program added successfully",
+      });
+      
+      // Reset form
+      setProgramForm({
+        programName: '',
+        description: '',
+        qualifications: '',
+        employmentCategory: '',
+        subProject: ''
+      });
+      setShowAddProgramForm(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add program",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setProgramForm(prev => ({ ...prev, [field]: value }));
   };
   return <div className="min-h-screen bg-background">
       {/* Header */}
@@ -37,55 +97,157 @@ const LandingPage = ({
         {/* Profile Section */}
         <div className="max-w-4xl mx-auto mb-12">
           <Card className="border-primary/20 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary">
-                  <User className="h-8 w-8 text-primary-foreground" />
+            <CardHeader 
+              className="bg-gradient-to-r from-primary/5 to-secondary/5 cursor-pointer"
+              onClick={() => setIsProfileCollapsed(!isProfileCollapsed)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary">
+                    <User className="h-8 w-8 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl text-foreground">{userData?.name || 'User Name'}</CardTitle>
+                    <CardDescription className="text-muted-foreground">Profile Details</CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle className="text-2xl text-foreground">{userData?.name || 'User Name'}</CardTitle>
-                  <CardDescription className="text-muted-foreground">Profile Details</CardDescription>
-                </div>
+                <Button variant="ghost" size="sm">
+                  {isProfileCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <Phone className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Mobile Number</p>
-                      <p className="font-semibold text-foreground">{userData?.mobile_number || 'N/A'}</p>
+            {!isProfileCollapsed && (
+              <CardContent className="pt-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <Phone className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Mobile Number</p>
+                        <p className="font-semibold text-foreground">{userData?.mobile_number || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Panchayath</p>
+                        <p className="font-semibold text-foreground">{userData?.panchayath || 'N/A'}</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Panchayath</p>
-                      <p className="font-semibold text-foreground">{userData?.panchayath || 'N/A'}</p>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Ward</p>
+                        <p className="font-semibold text-foreground">{userData?.ward || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Applied Category</p>
+                        <p className="font-semibold text-foreground capitalize">{userData?.applied_category || 'N/A'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Ward</p>
-                      <p className="font-semibold text-foreground">{userData?.ward || 'N/A'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Applied Category</p>
-                      <p className="font-semibold text-foreground capitalize">{userData?.applied_category || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            )}
           </Card>
         </div>
+
+        {/* Add Program Form */}
+        {showAddProgramForm && (
+          <div className="max-w-4xl mx-auto mb-12">
+            <Card className="border-secondary/20 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-secondary/5 to-accent/5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl text-foreground">പുതിയ പദ്ധതി ചേർക്കുക</CardTitle>
+                    <CardDescription className="text-muted-foreground">Add New Program Details</CardDescription>
+                  </div>
+                  <Button variant="ghost" onClick={() => setShowAddProgramForm(false)}>
+                    ✕
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Program Name *</label>
+                    <Input
+                      value={programForm.programName}
+                      onChange={(e) => handleFormChange('programName', e.target.value)}
+                      placeholder="Enter program name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Description *</label>
+                    <Textarea
+                      value={programForm.description}
+                      onChange={(e) => handleFormChange('description', e.target.value)}
+                      placeholder="Enter program description"
+                      rows={4}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Qualifications</label>
+                    <Textarea
+                      value={programForm.qualifications}
+                      onChange={(e) => handleFormChange('qualifications', e.target.value)}
+                      placeholder="Enter required qualifications"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Employment Category *</label>
+                    <Select onValueChange={(value) => handleFormChange('employmentCategory', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employment category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {employmentCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Sub Project</label>
+                    <Select onValueChange={(value) => handleFormChange('subProject', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select sub project" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subProjects.map((project) => (
+                          <SelectItem key={project} value={project}>
+                            {project}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex gap-4 pt-4">
+                    <Button onClick={handleProgramSubmit} className="flex-1">
+                      Submit Program
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowAddProgramForm(false)} className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="text-center mb-12">
           <h2 className="font-bold text-foreground mb-4 text-3xl">സ്വയംതൊഴിൽ സാധ്യതകളുടെ മഹാലോകം </h2>
