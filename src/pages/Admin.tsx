@@ -17,6 +17,7 @@ const Admin = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
@@ -148,6 +149,7 @@ const Admin = () => {
       setTeams(prev => [...prev, newTeam]);
       setNewTeamName('');
       setSelectedMembers([]);
+      setMemberSearchTerm('');
       setIsCreateTeamOpen(false);
 
       toast({
@@ -190,6 +192,12 @@ const Admin = () => {
     reg.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     reg.mobile_number?.includes(searchTerm) ||
     reg.address?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Filter registrations for member selection by mobile number
+  const filteredMemberRegistrations = registrations.filter(reg =>
+    reg.mobile_number?.includes(memberSearchTerm) ||
+    reg.full_name?.toLowerCase().includes(memberSearchTerm.toLowerCase())
   );
 
   // Helper function to get panchayath name by ID
@@ -497,39 +505,58 @@ const Admin = () => {
                         
                         <div>
                           <Label>Select Team Members</Label>
-                          <div className="mt-2 border rounded-md max-h-60 overflow-y-auto">
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead className="w-12">Select</TableHead>
-                                  <TableHead>Name</TableHead>
-                                  <TableHead>Mobile</TableHead>
-                                  <TableHead>Category</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {registrations.map((registration) => (
-                                  <TableRow key={registration.id}>
-                                    <TableCell>
-                                      <Checkbox
-                                        checked={selectedMembers.includes(registration.id)}
-                                        onCheckedChange={() => toggleMemberSelection(registration.id)}
-                                      />
-                                    </TableCell>
-                                    <TableCell className="font-medium">
-                                      {registration.full_name || 'N/A'}
-                                    </TableCell>
-                                    <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
-                                    <TableCell>
-                                      {registration.categories?.name_english || 'N/A'}
-                                    </TableCell>
+                          <div className="mt-2 space-y-3">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Search by mobile number or name..."
+                                value={memberSearchTerm}
+                                onChange={(e) => setMemberSearchTerm(e.target.value)}
+                                className="pl-10"
+                              />
+                            </div>
+                            <div className="border rounded-md max-h-60 overflow-y-auto">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="w-12">Select</TableHead>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Mobile</TableHead>
+                                    <TableHead>Category</TableHead>
                                   </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
+                                </TableHeader>
+                                <TableBody>
+                                  {filteredMemberRegistrations.length === 0 ? (
+                                    <TableRow>
+                                      <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                                        No members found matching search criteria
+                                      </TableCell>
+                                    </TableRow>
+                                  ) : (
+                                    filteredMemberRegistrations.map((registration) => (
+                                      <TableRow key={registration.id}>
+                                        <TableCell>
+                                          <Checkbox
+                                            checked={selectedMembers.includes(registration.id)}
+                                            onCheckedChange={() => toggleMemberSelection(registration.id)}
+                                          />
+                                        </TableCell>
+                                        <TableCell className="font-medium">
+                                          {registration.full_name || 'N/A'}
+                                        </TableCell>
+                                        <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
+                                        <TableCell>
+                                          {registration.categories?.name_english || 'N/A'}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </div>
                           </div>
                           <p className="text-sm text-muted-foreground mt-2">
-                            Selected: {selectedMembers.length} members
+                            Selected: {selectedMembers.length} members | Showing: {filteredMemberRegistrations.length} of {registrations.length} total
                           </p>
                         </div>
                         
