@@ -408,7 +408,7 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="employment" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
-              Categories ({categories.length})
+              Employment ({employmentCategories.length})
             </TabsTrigger>
             <TabsTrigger value="teams" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
@@ -648,15 +648,15 @@ const Admin = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {categories.length === 0 ? <div className="text-center py-8 text-emerald-foreground/70">
-                        No categories found
-                      </div> : categories.map(category => {
+                    {employmentCategories.length === 0 ? <div className="text-center py-8 text-emerald-foreground/70">
+                        No employment categories found
+                      </div> : employmentCategories.map(category => {
                     const categorySubProjects = allSubProjects.filter((subProject: any) => subProject.category_id === category.id);
                     return <Card key={category.id} className="border-l-4 border-l-emerald bg-white/10">
                             <CardHeader className="pb-3 bg-slate-800">
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <h3 className="font-semibold text-lg text-emerald-foreground">{category.name_english || category.name_malayalam || category.name || 'N/A'}</h3>
+                                  <h3 className="font-semibold text-lg text-emerald-foreground">{category.display_name || category.name || 'N/A'}</h3>
                                   <p className="text-sm text-emerald-foreground/70 mt-1">ID: {category.id}</p>
                                   <p className="text-xs text-emerald-foreground/50 mt-1">
                                     {categorySubProjects.length} sub-projects
