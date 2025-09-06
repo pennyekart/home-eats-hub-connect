@@ -8,8 +8,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Search, RefreshCw, Users, Tag, UserPlus, Trash2, Plus, Minus } from 'lucide-react';
+import { Search, RefreshCw, Users, Tag, UserPlus, Trash2, Plus, Minus, Edit, Briefcase, FolderPlus } from 'lucide-react';
 import { useTeams, useCreateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from '@/hooks/useTeams';
+import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
+import { 
+  useCreateEmploymentCategory, 
+  useUpdateEmploymentCategory, 
+  useDeleteEmploymentCategory,
+  useCreateSubProject,
+  useUpdateSubProject,
+  useDeleteSubProject
+} from '@/hooks/useAdminEmploymentCategories';
 
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
@@ -23,6 +32,17 @@ const Admin = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryDisplayName, setNewCategoryDisplayName] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+  const [newSubProjectName, setNewSubProjectName] = useState('');
+  const [newSubProjectDisplayName, setNewSubProjectDisplayName] = useState('');
+  const [newSubProjectDescription, setNewSubProjectDescription] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+  const [isCreateSubProjectOpen, setIsCreateSubProjectOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingSubProject, setEditingSubProject] = useState<any>(null);
   const { toast } = useToast();
   
   // Team hooks
@@ -31,6 +51,16 @@ const Admin = () => {
   const deleteTeamMutation = useDeleteTeam();
   const addMemberMutation = useAddTeamMember();
   const removeMemberMutation = useRemoveTeamMember();
+
+  // Employment categories and sub-projects hooks
+  const { data: employmentCategories = [] } = useEmploymentCategories();
+  const { data: allSubProjects = [] } = useAllSubProjects();
+  const createCategoryMutation = useCreateEmploymentCategory();
+  const updateCategoryMutation = useUpdateEmploymentCategory();
+  const deleteCategoryMutation = useDeleteEmploymentCategory();
+  const createSubProjectMutation = useCreateSubProject();
+  const updateSubProjectMutation = useUpdateSubProject();
+  const deleteSubProjectMutation = useDeleteSubProject();
 
   const fetchPanchayaths = async () => {
     try {
@@ -219,6 +249,106 @@ const Admin = () => {
     removeMemberMutation.mutate({ teamId, memberId });
   };
 
+  // Employment category handlers
+  const createEmploymentCategory = async () => {
+    if (!newCategoryName.trim() || !newCategoryDisplayName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide category name and display name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      await createCategoryMutation.mutateAsync({
+        name: newCategoryName,
+        display_name: newCategoryDisplayName,
+        description: newCategoryDescription || null
+      });
+      
+      setNewCategoryName('');
+      setNewCategoryDisplayName('');
+      setNewCategoryDescription('');
+      setIsCreateCategoryOpen(false);
+    } catch (error) {
+      console.error('Create category error:', error);
+    }
+  };
+
+  const updateEmploymentCategory = async () => {
+    if (!editingCategory || !editingCategory.name || !editingCategory.display_name) {
+      toast({
+        title: "Error",
+        description: "Please provide category name and display name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      await updateCategoryMutation.mutateAsync(editingCategory);
+      setEditingCategory(null);
+    } catch (error) {
+      console.error('Update category error:', error);
+    }
+  };
+
+  const deleteEmploymentCategory = (categoryId: string) => {
+    deleteCategoryMutation.mutate(categoryId);
+  };
+
+  // Sub-project handlers
+  const createSubProject = async () => {
+    if (!newSubProjectName.trim() || !newSubProjectDisplayName.trim() || !selectedCategoryId) {
+      toast({
+        title: "Error",
+        description: "Please provide sub-project name, display name, and select a category",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      await createSubProjectMutation.mutateAsync({
+        category_id: selectedCategoryId,
+        name: newSubProjectName,
+        display_name: newSubProjectDisplayName,
+        description: newSubProjectDescription || null
+      });
+      
+      setNewSubProjectName('');
+      setNewSubProjectDisplayName('');
+      setNewSubProjectDescription('');
+      setSelectedCategoryId('');
+      setIsCreateSubProjectOpen(false);
+    } catch (error) {
+      console.error('Create sub-project error:', error);
+    }
+  };
+
+  const updateSubProject = async () => {
+    if (!editingSubProject || !editingSubProject.name || !editingSubProject.display_name) {
+      toast({
+        title: "Error", 
+        description: "Please provide sub-project name and display name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      await updateSubProjectMutation.mutateAsync(editingSubProject);
+      setEditingSubProject(null);
+    } catch (error) {
+      console.error('Update sub-project error:', error);
+    }
+  };
+
+  const deleteSubProject = (subProjectId: string) => {
+    deleteSubProjectMutation.mutate(subProjectId);
+  };
+
   const toggleMemberSelection = (registrationId: string) => {
     setSelectedMembers(prev => 
       prev.includes(registrationId)
@@ -313,7 +443,7 @@ const Admin = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="registrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Registrations ({filteredRegistrations.length})
@@ -321,6 +451,14 @@ const Admin = () => {
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
               Categories ({categories.length})
+            </TabsTrigger>
+            <TabsTrigger value="employment" className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              Employment ({employmentCategories.length})
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="flex items-center gap-2">
+              <FolderPlus className="h-4 w-4" />
+              Sub-Projects ({allSubProjects.length})
             </TabsTrigger>
             <TabsTrigger value="teams" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
@@ -495,6 +633,233 @@ const Admin = () => {
                                 </p>
                               </div>
                             )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="employment" className="mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5" />
+                    Employment Categories ({employmentCategories.length})
+                  </CardTitle>
+                  <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Category
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create Employment Category</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="category-name">Name</Label>
+                          <Input
+                            id="category-name"
+                            placeholder="Enter category name..."
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="category-display">Display Name</Label>
+                          <Input
+                            id="category-display"
+                            placeholder="Enter display name..."
+                            value={newCategoryDisplayName}
+                            onChange={(e) => setNewCategoryDisplayName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="category-desc">Description</Label>
+                          <Input
+                            id="category-desc"
+                            placeholder="Enter description (optional)..."
+                            value={newCategoryDescription}
+                            onChange={(e) => setNewCategoryDescription(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsCreateCategoryOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={createEmploymentCategory}>
+                            Create Category
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {employmentCategories.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      No employment categories found
+                    </div>
+                  ) : (
+                    employmentCategories.map((category) => (
+                      <Card key={category.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-semibold text-sm">{category.display_name}</h3>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingCategory(category)}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => deleteEmploymentCategory(category.id)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p><span className="font-medium">Name:</span> {category.name}</p>
+                              {category.description && <p><span className="font-medium">Description:</span> {category.description}</p>}
+                              <p><span className="font-medium">Created:</span> {new Date(category.created_at).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="projects" className="mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <FolderPlus className="h-5 w-5" />
+                    Sub-Projects ({allSubProjects.length})
+                  </CardTitle>
+                  <Dialog open={isCreateSubProjectOpen} onOpenChange={setIsCreateSubProjectOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Sub-Project
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create Sub-Project</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="category-select">Employment Category</Label>
+                          <select
+                            id="category-select"
+                            value={selectedCategoryId}
+                            onChange={(e) => setSelectedCategoryId(e.target.value)}
+                            className="w-full p-2 border rounded-md"
+                          >
+                            <option value="">Select category...</option>
+                            {employmentCategories.map((cat) => (
+                              <option key={cat.id} value={cat.id}>
+                                {cat.display_name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="subproject-name">Name</Label>
+                          <Input
+                            id="subproject-name"
+                            placeholder="Enter sub-project name..."
+                            value={newSubProjectName}
+                            onChange={(e) => setNewSubProjectName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="subproject-display">Display Name</Label>
+                          <Input
+                            id="subproject-display"
+                            placeholder="Enter display name..."
+                            value={newSubProjectDisplayName}
+                            onChange={(e) => setNewSubProjectDisplayName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="subproject-desc">Description</Label>
+                          <Input
+                            id="subproject-desc"
+                            placeholder="Enter description (optional)..."
+                            value={newSubProjectDescription}
+                            onChange={(e) => setNewSubProjectDescription(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsCreateSubProjectOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={createSubProject}>
+                            Create Sub-Project
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {allSubProjects.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      No sub-projects found
+                    </div>
+                  ) : (
+                    allSubProjects.map((subProject) => (
+                      <Card key={subProject.id} className="border-l-4 border-l-accent">
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-semibold text-sm">{subProject.display_name}</h3>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingSubProject(subProject)}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => deleteSubProject(subProject.id)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p><span className="font-medium">Name:</span> {subProject.name}</p>
+                              <p><span className="font-medium">Category:</span> {subProject.employment_categories?.display_name || 'N/A'}</p>
+                              {subProject.description && <p><span className="font-medium">Description:</span> {subProject.description}</p>}
+                              <p><span className="font-medium">Created:</span> {new Date(subProject.created_at).toLocaleDateString()}</p>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -802,6 +1167,96 @@ const Admin = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Edit Category Dialog */}
+        <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Employment Category</DialogTitle>
+            </DialogHeader>
+            {editingCategory && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category-name">Name</Label>
+                  <Input
+                    id="edit-category-name"
+                    value={editingCategory.name}
+                    onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category-display">Display Name</Label>
+                  <Input
+                    id="edit-category-display"
+                    value={editingCategory.display_name}
+                    onChange={(e) => setEditingCategory({...editingCategory, display_name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category-desc">Description</Label>
+                  <Input
+                    id="edit-category-desc"
+                    value={editingCategory.description || ''}
+                    onChange={(e) => setEditingCategory({...editingCategory, description: e.target.value})}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setEditingCategory(null)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={updateEmploymentCategory}>
+                    Update Category
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Sub-Project Dialog */}
+        <Dialog open={!!editingSubProject} onOpenChange={(open) => !open && setEditingSubProject(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Sub-Project</DialogTitle>
+            </DialogHeader>
+            {editingSubProject && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-subproject-name">Name</Label>
+                  <Input
+                    id="edit-subproject-name"
+                    value={editingSubProject.name}
+                    onChange={(e) => setEditingSubProject({...editingSubProject, name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-subproject-display">Display Name</Label>
+                  <Input
+                    id="edit-subproject-display"
+                    value={editingSubProject.display_name}
+                    onChange={(e) => setEditingSubProject({...editingSubProject, display_name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-subproject-desc">Description</Label>
+                  <Input
+                    id="edit-subproject-desc"
+                    value={editingSubProject.description || ''}
+                    onChange={(e) => setEditingSubProject({...editingSubProject, description: e.target.value})}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setEditingSubProject(null)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={updateSubProject}>
+                    Update Sub-Project
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
