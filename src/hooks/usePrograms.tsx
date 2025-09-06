@@ -71,14 +71,14 @@ export const useCreateProgram = () => {
 
   return useMutation({
     mutationFn: async (programData: CreateProgramData) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      // For now, use a placeholder user_id since authentication isn't set up yet
+      const tempUserId = "00000000-0000-0000-0000-000000000000";
 
       const { data, error } = await supabase
         .from("programs")
         .insert({
           ...programData,
-          user_id: user.id,
+          user_id: tempUserId,
         })
         .select()
         .single();
