@@ -8,20 +8,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Search, RefreshCw, Users, Tag, UserPlus, Trash2 } from 'lucide-react';
+import { Search, RefreshCw, Users, Tag, UserPlus, Trash2, Plus, Minus } from 'lucide-react';
+import { useTeams, useCreateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from '@/hooks/useTeams';
 
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [panchayaths, setPanchayaths] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const { toast } = useToast();
+  
+  // Team hooks
+  const { data: teams = [], isLoading: teamsLoading } = useTeams();
+  const createTeamMutation = useCreateTeam();
+  const deleteTeamMutation = useDeleteTeam();
+  const addMemberMutation = useAddTeamMember();
+  const removeMemberMutation = useRemoveTeamMember();
 
   const fetchPanchayaths = async () => {
     try {
@@ -134,44 +143,80 @@ const Admin = () => {
     }
 
     try {
+      // Create team first
+      const newTeam = await createTeamMutation.mutateAsync({
+        name: newTeamName,
+        description: `Team with ${selectedMembers.length} initial members`
+      });
+
+      // Add selected members to the team
       const selectedRegistrations = registrations.filter(reg => 
         selectedMembers.includes(reg.id)
       );
 
-      const newTeam = {
-        id: Date.now().toString(),
-        name: newTeamName,
-        members: selectedRegistrations,
-        created_at: new Date().toISOString(),
-        member_count: selectedRegistrations.length
-      };
+      for (const member of selectedRegistrations) {
+        await addMemberMutation.mutateAsync({
+          teamId: newTeam.id,
+          memberId: member.id,
+          memberName: member.full_name || 'N/A',
+          memberMobile: member.mobile_number
+        });
+      }
 
-      setTeams(prev => [...prev, newTeam]);
       setNewTeamName('');
       setSelectedMembers([]);
       setMemberSearchTerm('');
       setIsCreateTeamOpen(false);
-
-      toast({
-        title: "Success",
-        description: `Team "${newTeamName}" created with ${selectedRegistrations.length} members`,
-      });
     } catch (error) {
       console.error('Team creation error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create team",
-        variant: "destructive"
-      });
     }
   };
 
   const deleteTeam = (teamId: string) => {
-    setTeams(prev => prev.filter(team => team.id !== teamId));
-    toast({
-      title: "Success",
-      description: "Team deleted successfully",
-    });
+    deleteTeamMutation.mutate(teamId);
+  };
+
+  const openAddMemberDialog = (teamId: string) => {
+    setSelectedTeamId(teamId);
+    setIsAddMemberOpen(true);
+    setSelectedMembers([]);
+  };
+
+  const addMembersToTeam = async () => {
+    if (!selectedTeamId || selectedMembers.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one member",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const selectedRegistrations = registrations.filter(reg => 
+        selectedMembers.includes(reg.id)
+      );
+
+      for (const member of selectedRegistrations) {
+        await addMemberMutation.mutateAsync({
+          teamId: selectedTeamId,
+          memberId: member.id,
+          memberName: member.full_name || 'N/A',
+          memberMobile: member.mobile_number
+        });
+      }
+
+      setSelectedMembers([]);
+      setMemberSearchTerm('');
+      setIsAddMemberOpen(false);
+      setSelectedTeamId(null);
+    } catch (error) {
+      console.error('Add members error:', error);
+    }
+  };
+
+  const removeMemberFromTeam = (teamId: string, memberId: string) => {
+    removeMemberMutation.mutate({ teamId, memberId });
   };
 
   const toggleMemberSelection = (registrationId: string) => {
@@ -468,102 +513,205 @@ const Admin = () => {
                     <UserPlus className="h-5 w-5" />
                     Teams ({teams.length})
                   </CardTitle>
-                  <Dialog open={isCreateTeamOpen} onOpenChange={setIsCreateTeamOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Create Team
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Create New Team</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-6">
-                        <div>
-                          <Label htmlFor="teamName">Team Name</Label>
-                          <Input
-                            id="teamName"
-                            value={newTeamName}
-                            onChange={(e) => setNewTeamName(e.target.value)}
-                            placeholder="Enter team name..."
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label>Select Team Members</Label>
-                          <div className="mt-2 space-y-3">
-                            <div className="relative">
-                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                placeholder="Search by mobile number or name..."
-                                value={memberSearchTerm}
-                                onChange={(e) => setMemberSearchTerm(e.target.value)}
-                                className="pl-10"
-                              />
-                            </div>
-                            <div className="border rounded-md max-h-60 overflow-y-auto">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="w-12">Select</TableHead>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Mobile</TableHead>
-                                    <TableHead>Category</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {filteredMemberRegistrations.length === 0 ? (
+                  <div className="flex gap-2">
+                    <Dialog open={isCreateTeamOpen} onOpenChange={setIsCreateTeamOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Create Team
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl">
+                        <DialogHeader>
+                          <DialogTitle>Create New Team</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="team-name">Team Name</Label>
+                            <Input
+                              id="team-name"
+                              placeholder="Enter team name..."
+                              value={newTeamName}
+                              onChange={(e) => setNewTeamName(e.target.value)}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Select Members</Label>
+                            <div className="space-y-2">
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  placeholder="Search by mobile number or name..."
+                                  value={memberSearchTerm}
+                                  onChange={(e) => setMemberSearchTerm(e.target.value)}
+                                  className="pl-10"
+                                />
+                              </div>
+                              <div className="border rounded-md max-h-60 overflow-y-auto">
+                                <Table>
+                                  <TableHeader>
                                     <TableRow>
-                                      <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
-                                        No members found matching search criteria
-                                      </TableCell>
+                                      <TableHead className="w-12">Select</TableHead>
+                                      <TableHead>Name</TableHead>
+                                      <TableHead>Mobile</TableHead>
+                                      <TableHead>Category</TableHead>
                                     </TableRow>
-                                  ) : (
-                                    filteredMemberRegistrations.map((registration) => (
-                                      <TableRow key={registration.id}>
-                                        <TableCell>
-                                          <Checkbox
-                                            checked={selectedMembers.includes(registration.id)}
-                                            onCheckedChange={() => toggleMemberSelection(registration.id)}
-                                          />
-                                        </TableCell>
-                                        <TableCell className="font-medium">
-                                          {registration.full_name || 'N/A'}
-                                        </TableCell>
-                                        <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
-                                        <TableCell>
-                                          {registration.categories?.name_english || 'N/A'}
+                                  </TableHeader>
+                                  <TableBody>
+                                    {filteredMemberRegistrations.length === 0 ? (
+                                      <TableRow>
+                                        <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                                          No members found matching search criteria
                                         </TableCell>
                                       </TableRow>
-                                    ))
-                                  )}
-                                </TableBody>
-                              </Table>
+                                    ) : (
+                                      filteredMemberRegistrations.map((registration) => (
+                                        <TableRow key={registration.id}>
+                                          <TableCell>
+                                            <Checkbox
+                                              checked={selectedMembers.includes(registration.id)}
+                                              onCheckedChange={() => toggleMemberSelection(registration.id)}
+                                            />
+                                          </TableCell>
+                                          <TableCell className="font-medium">
+                                            {registration.full_name || 'N/A'}
+                                          </TableCell>
+                                          <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
+                                          <TableCell>
+                                            {registration.categories?.name_english || 'N/A'}
+                                          </TableCell>
+                                        </TableRow>
+                                      ))
+                                    )}
+                                  </TableBody>
+                                </Table>
+                              </div>
                             </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Selected: {selectedMembers.length} members | Showing: {filteredMemberRegistrations.length} of {registrations.length} total
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-2">
-                            Selected: {selectedMembers.length} members | Showing: {filteredMemberRegistrations.length} of {registrations.length} total
-                          </p>
+                          
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setIsCreateTeamOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={createTeam} disabled={createTeamMutation.isPending}>
+                              Create Team
+                            </Button>
+                          </div>
                         </div>
-                        
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => setIsCreateTeamOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={createTeam}>
-                            Create Team
-                          </Button>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" disabled={teams.length === 0}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Member
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl">
+                        <DialogHeader>
+                          <DialogTitle>Add Members to Team</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Select Team</Label>
+                            <select 
+                              className="w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background rounded-md"
+                              value={selectedTeamId || ''}
+                              onChange={(e) => setSelectedTeamId(e.target.value)}
+                            >
+                              <option value="">Choose a team...</option>
+                              {teams.map((team) => (
+                                <option key={team.id} value={team.id}>
+                                  {team.name} ({team.member_count} members)
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Select Members to Add</Label>
+                            <div className="space-y-2">
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  placeholder="Search by mobile number or name..."
+                                  value={memberSearchTerm}
+                                  onChange={(e) => setMemberSearchTerm(e.target.value)}
+                                  className="pl-10"
+                                />
+                              </div>
+                              <div className="border rounded-md max-h-60 overflow-y-auto">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-12">Select</TableHead>
+                                      <TableHead>Name</TableHead>
+                                      <TableHead>Mobile</TableHead>
+                                      <TableHead>Category</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {filteredMemberRegistrations.length === 0 ? (
+                                      <TableRow>
+                                        <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                                          No members found matching search criteria
+                                        </TableCell>
+                                      </TableRow>
+                                    ) : (
+                                      filteredMemberRegistrations.map((registration) => (
+                                        <TableRow key={registration.id}>
+                                          <TableCell>
+                                            <Checkbox
+                                              checked={selectedMembers.includes(registration.id)}
+                                              onCheckedChange={() => toggleMemberSelection(registration.id)}
+                                            />
+                                          </TableCell>
+                                          <TableCell className="font-medium">
+                                            {registration.full_name || 'N/A'}
+                                          </TableCell>
+                                          <TableCell>{registration.mobile_number || 'N/A'}</TableCell>
+                                          <TableCell>
+                                            {registration.categories?.name_english || 'N/A'}
+                                          </TableCell>
+                                        </TableRow>
+                                      ))
+                                    )}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Selected: {selectedMembers.length} members
+                            </p>
+                          </div>
+                          
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setIsAddMemberOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={addMembersToTeam} disabled={addMemberMutation.isPending}>
+                              Add Members
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {teams.length === 0 ? (
+                  {teamsLoading ? (
+                    <div className="col-span-full flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                      Loading teams...
+                    </div>
+                  ) : teams.length === 0 ? (
                     <div className="col-span-full text-center py-8 text-muted-foreground">
                       No teams created yet. Click "Create Team" to get started.
                     </div>
@@ -579,14 +727,24 @@ const Admin = () => {
                               <h3 className="font-semibold text-sm truncate">
                                 {team.name}
                               </h3>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => deleteTeam(team.id)}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openAddMemberDialog(team.id)}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => deleteTeam(team.id)}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             </div>
                             
                             <div className="space-y-2">
@@ -605,20 +763,32 @@ const Admin = () => {
                             
                             <div className="pt-2 border-t">
                               <p className="text-xs font-medium text-muted-foreground mb-2">Team Members:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {team.members.slice(0, 2).map((member: any, index: number) => (
-                                  <span 
-                                    key={index}
-                                    className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 truncate max-w-20"
-                                    title={member.full_name}
-                                  >
-                                    {member.full_name}
-                                  </span>
-                                ))}
-                                {team.members.length > 2 && (
-                                  <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
-                                    +{team.members.length - 2} more
-                                  </span>
+                              <div className="space-y-1">
+                                {team.members.length === 0 ? (
+                                  <p className="text-xs text-muted-foreground">No members yet</p>
+                                ) : (
+                                  <>
+                                    {team.members.slice(0, 3).map((member, index) => (
+                                      <div key={index} className="flex items-center justify-between">
+                                        <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 truncate flex-1 mr-1">
+                                          {member.member_name}
+                                        </span>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeMemberFromTeam(team.id, member.member_id)}
+                                          className="h-5 w-5 p-0 text-red-500 hover:text-red-700"
+                                        >
+                                          <Minus className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                    {team.members.length > 3 && (
+                                      <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
+                                        +{team.members.length - 3} more
+                                      </span>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             </div>
