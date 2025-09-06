@@ -35,7 +35,8 @@ const LandingPage = ({
   // Fetch employment categories, sub-projects, and programs from database
   const { data: categories = [], isLoading: categoriesLoading } = useEmploymentCategories();
   const { data: allSubProjects = [], isLoading: subProjectsLoading } = useAllSubProjects();
-  const { data: programs = [], isLoading: programsLoading } = usePrograms();
+  // Filter programs based on user's registration category
+  const { data: programs = [], isLoading: programsLoading } = usePrograms(userData?.category_name);
   const createProgramMutation = useCreateProgram();
 
   // Group sub-projects by category for easy access

@@ -23,18 +23,26 @@ export interface CreateProgramData {
   qualifications?: string;
 }
 
-export const usePrograms = () => {
+export const usePrograms = (userCategoryName?: string) => {
   return useQuery({
-    queryKey: ["programs"],
+    queryKey: ["programs", userCategoryName],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("programs")
         .select(`
           *,
           employment_categories!inner(name, display_name),
           sub_projects(name, display_name)
-        `)
-        .order("created_at", { ascending: false });
+        `);
+
+      // Filter by category if user is not registered under "job card"
+      if (userCategoryName && userCategoryName.toLowerCase() !== 'job card') {
+        query = query.eq("employment_categories.name", userCategoryName);
+      }
+
+      query = query.order("created_at", { ascending: false });
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;
