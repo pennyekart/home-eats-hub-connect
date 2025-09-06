@@ -382,7 +382,7 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-purple/5 to-emerald/5 p-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
@@ -391,49 +391,54 @@ const Admin = () => {
         </div>
 
         {/* Stats Card */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gradient-info border-info">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-info-foreground">
               <Users className="h-5 w-5" />
               Registration Statistics
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{registrations.length}</div>
-                <div className="text-sm text-muted-foreground">Total Registrations</div>
+              <div className="text-center bg-white/10 rounded-lg p-3">
+                <div className="text-2xl font-bold text-info-foreground">{registrations.length}</div>
+                <div className="text-sm text-info-foreground/70">Total Registrations</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-secondary">{categories.length}</div>
-                <div className="text-sm text-muted-foreground">Total Categories</div>
+              <div className="text-center bg-white/10 rounded-lg p-3">
+                <div className="text-2xl font-bold text-info-foreground">{categories.length}</div>
+                <div className="text-sm text-info-foreground/70">Total Categories</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-accent">{filteredRegistrations.length}</div>
-                <div className="text-sm text-muted-foreground">Filtered Results</div>
+              <div className="text-center bg-white/10 rounded-lg p-3">
+                <div className="text-2xl font-bold text-info-foreground">{filteredRegistrations.length}</div>
+                <div className="text-sm text-info-foreground/70">Filtered Results</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-muted-foreground">100%</div>
-                <div className="text-sm text-muted-foreground">Data Accuracy</div>
+              <div className="text-center bg-white/10 rounded-lg p-3">
+                <div className="text-2xl font-bold text-info-foreground">100%</div>
+                <div className="text-sm text-info-foreground/70">Data Accuracy</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Controls */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gradient-orange border-orange">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-orange-foreground/70" />
                 <Input
                   placeholder="Search by name, mobile, or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-white/10 border-white/20 text-orange-foreground placeholder:text-orange-foreground/50"
                 />
               </div>
-              <Button onClick={() => { fetchRegistrations(); fetchCategories(); fetchPanchayaths(); }} disabled={loading}>
+              <Button 
+                onClick={() => { fetchRegistrations(); fetchCategories(); fetchPanchayaths(); }} 
+                disabled={loading}
+                variant="outline"
+                className="bg-white/10 border-white/20 text-orange-foreground hover:bg-white/20"
+              >
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
@@ -443,7 +448,7 @@ const Admin = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="registrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Registrations ({filteredRegistrations.length})
@@ -455,10 +460,6 @@ const Admin = () => {
             <TabsTrigger value="employment" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
               Employment ({employmentCategories.length})
-            </TabsTrigger>
-            <TabsTrigger value="projects" className="flex items-center gap-2">
-              <FolderPlus className="h-4 w-4" />
-              Sub-Projects ({allSubProjects.length})
             </TabsTrigger>
             <TabsTrigger value="teams" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
@@ -748,133 +749,12 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="projects" className="mt-6">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2">
-                    <FolderPlus className="h-5 w-5" />
-                    Sub-Projects ({allSubProjects.length})
-                  </CardTitle>
-                  <Dialog open={isCreateSubProjectOpen} onOpenChange={setIsCreateSubProjectOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Sub-Project
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create Sub-Project</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="category-select">Employment Category</Label>
-                          <select
-                            id="category-select"
-                            value={selectedCategoryId}
-                            onChange={(e) => setSelectedCategoryId(e.target.value)}
-                            className="w-full p-2 border rounded-md"
-                          >
-                            <option value="">Select category...</option>
-                            {employmentCategories.map((cat) => (
-                              <option key={cat.id} value={cat.id}>
-                                {cat.display_name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="subproject-name">Name</Label>
-                          <Input
-                            id="subproject-name"
-                            placeholder="Enter sub-project name..."
-                            value={newSubProjectName}
-                            onChange={(e) => setNewSubProjectName(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="subproject-display">Display Name</Label>
-                          <Input
-                            id="subproject-display"
-                            placeholder="Enter display name..."
-                            value={newSubProjectDisplayName}
-                            onChange={(e) => setNewSubProjectDisplayName(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="subproject-desc">Description</Label>
-                          <Input
-                            id="subproject-desc"
-                            placeholder="Enter description (optional)..."
-                            value={newSubProjectDescription}
-                            onChange={(e) => setNewSubProjectDescription(e.target.value)}
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => setIsCreateSubProjectOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={createSubProject}>
-                            Create Sub-Project
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {allSubProjects.length === 0 ? (
-                    <div className="col-span-full text-center py-8 text-muted-foreground">
-                      No sub-projects found
-                    </div>
-                  ) : (
-                    allSubProjects.map((subProject) => (
-                      <Card key={subProject.id} className="border-l-4 border-l-accent">
-                        <CardContent className="p-4">
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-start">
-                              <h3 className="font-semibold text-sm">{subProject.display_name}</h3>
-                              <div className="flex gap-1">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setEditingSubProject(subProject)}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => deleteSubProject(subProject.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="text-xs text-muted-foreground space-y-1">
-                              <p><span className="font-medium">Name:</span> {subProject.name}</p>
-                              <p><span className="font-medium">Category:</span> {subProject.employment_categories?.display_name || 'N/A'}</p>
-                              {subProject.description && <p><span className="font-medium">Description:</span> {subProject.description}</p>}
-                              <p><span className="font-medium">Created:</span> {new Date(subProject.created_at).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="teams" className="mt-6">
-            <Card>
+            <Card className="bg-gradient-to-r from-warning to-orange border-warning">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-warning-foreground">
                     <UserPlus className="h-5 w-5" />
                     Teams ({teams.length})
                   </CardTitle>

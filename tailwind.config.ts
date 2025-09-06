@@ -69,11 +69,39 @@ export default {
 				'program-card': {
 					DEFAULT: 'hsl(var(--program-card))',
 					foreground: 'hsl(var(--program-card-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))'
+				},
+				purple: {
+					DEFAULT: 'hsl(var(--purple))',
+					foreground: 'hsl(var(--purple-foreground))'
+				},
+				orange: {
+					DEFAULT: 'hsl(var(--orange))',
+					foreground: 'hsl(var(--orange-foreground))'
+				},
+				emerald: {
+					DEFAULT: 'hsl(var(--emerald))',
+					foreground: 'hsl(var(--emerald-foreground))'
 				}
 			},
 			backgroundImage: {
 				'gradient-job-selection': 'var(--gradient-job-selection)',
-				'gradient-add-program': 'var(--gradient-add-program)'
+				'gradient-add-program': 'var(--gradient-add-program)',
+				'gradient-purple': 'var(--gradient-purple)',
+				'gradient-emerald': 'var(--gradient-emerald)',
+				'gradient-orange': 'var(--gradient-orange)',
+				'gradient-info': 'var(--gradient-info)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

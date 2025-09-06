@@ -61,6 +61,26 @@ All colors MUST be HSL.
     --job-card-foreground: 266 100% 20%;
     --program-card: 142 100% 95%;
     --program-card-foreground: 142 100% 20%;
+
+    /* Colorful admin design tokens */
+    --success: 142 76% 36%;
+    --success-foreground: 355 100% 97%;
+    --warning: 48 96% 53%;
+    --warning-foreground: 26 83% 14%;
+    --info: 213 94% 68%;
+    --info-foreground: 214 100% 97%;
+    --purple: 262 83% 58%;
+    --purple-foreground: 270 100% 98%;
+    --orange: 25 95% 53%;
+    --orange-foreground: 24 100% 15%;
+    --emerald: 160 84% 39%;
+    --emerald-foreground: 150 100% 97%;
+    
+    /* Colorful gradients */
+    --gradient-purple: linear-gradient(135deg, 262 83% 58%, 270 80% 65%);
+    --gradient-emerald: linear-gradient(135deg, 160 84% 39%, 165 80% 45%);
+    --gradient-orange: linear-gradient(135deg, 25 95% 53%, 35 90% 60%);
+    --gradient-info: linear-gradient(135deg, 213 94% 68%, 220 90% 75%);
   }
 
   .dark {
@@ -107,6 +127,26 @@ All colors MUST be HSL.
     --job-card-foreground: 266 100% 85%;
     --program-card: 142 80% 15%;
     --program-card-foreground: 142 100% 85%;
+
+    /* Dark mode colorful tokens */
+    --success: 142 69% 58%;
+    --success-foreground: 142 100% 5%;
+    --warning: 48 96% 63%;
+    --warning-foreground: 48 100% 8%;
+    --info: 213 94% 78%;
+    --info-foreground: 213 100% 5%;
+    --purple: 262 83% 68%;
+    --purple-foreground: 262 100% 5%;
+    --orange: 25 95% 63%;
+    --orange-foreground: 25 100% 8%;
+    --emerald: 160 84% 49%;
+    --emerald-foreground: 160 100% 5%;
+    
+    /* Dark mode colorful gradients */
+    --gradient-purple: linear-gradient(135deg, 262 83% 68%, 270 80% 75%);
+    --gradient-emerald: linear-gradient(135deg, 160 84% 49%, 165 80% 55%);
+    --gradient-orange: linear-gradient(135deg, 25 95% 63%, 35 90% 70%);
+    --gradient-info: linear-gradient(135deg, 213 94% 78%, 220 90% 85%);
   }
 }
 
