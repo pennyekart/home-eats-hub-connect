@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Briefcase, Plus, User, Phone, MapPin, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
+import { usePrograms, useCreateProgram } from '@/hooks/usePrograms';
 import Navigation from '@/components/Navigation';
 
 interface LandingPageProps {
@@ -31,9 +32,11 @@ const LandingPage = ({
   });
   const { toast } = useToast();
 
-  // Fetch employment categories and sub-projects from database
+  // Fetch employment categories, sub-projects, and programs from database
   const { data: categories = [], isLoading: categoriesLoading } = useEmploymentCategories();
   const { data: allSubProjects = [], isLoading: subProjectsLoading } = useAllSubProjects();
+  const { data: programs = [], isLoading: programsLoading } = usePrograms();
+  const createProgramMutation = useCreateProgram();
 
   // Group sub-projects by category for easy access
   const categorySubProjects = allSubProjects.reduce((acc, subProject) => {
@@ -75,12 +78,12 @@ const LandingPage = ({
     }
 
     try {
-      // Here you would submit the program data to your database
-      console.log('Program data:', programForm);
-      
-      toast({
-        title: "Success",
-        description: "Program added successfully",
+      await createProgramMutation.mutateAsync({
+        category_id: programForm.categoryId,
+        sub_project_id: programForm.subProjectId || undefined,
+        program_name: programForm.programName,
+        description: programForm.description,
+        qualifications: programForm.qualifications || undefined,
       });
       
       // Reset form
@@ -93,11 +96,8 @@ const LandingPage = ({
       });
       setShowAddProgramForm(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add program",
-        variant: "destructive"
-      });
+      // Error handling is done in the mutation
+      console.error('Program submission error:', error);
     }
   };
 
@@ -289,9 +289,55 @@ const LandingPage = ({
         {currentView === 'dashboard' && renderDashboardView()}
         {currentView === 'profile' && renderProfileView()}
         {currentView === 'jobs' && (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-4">തൊഴിലവസരങ്ങൾ</h2>
-            <p className="text-muted-foreground">Job opportunities will be displayed here</p>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">ലഭ്യമായ തൊഴിലവസരങ്ങൾ</h2>
+              <p className="text-muted-foreground">Available job opportunities and programs</p>
+            </div>
+            
+            {programsLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading programs...</p>
+              </div>
+            ) : programs.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No programs available yet. Be the first to add one!</p>
+              </div>
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-6">
+                {programs.map((program: any) => (
+                  <Card key={program.id} className="border-primary/20 hover:shadow-lg transition-all">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-xl text-foreground">{program.program_name}</CardTitle>
+                          <CardDescription className="text-sm text-muted-foreground mt-1">
+                            {program.employment_categories?.display_name}
+                            {program.sub_projects?.display_name && ` • ${program.sub_projects.display_name}`}
+                          </CardDescription>
+                        </div>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          program.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          program.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {program.status}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4">{program.description}</p>
+                      {program.qualifications && (
+                        <div>
+                          <h4 className="font-medium text-foreground mb-2">Required Qualifications:</h4>
+                          <p className="text-sm text-muted-foreground">{program.qualifications}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
         {currentView === 'programs' && (
