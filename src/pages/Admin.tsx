@@ -645,108 +645,314 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="employment" className="mt-6">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-5 w-5" />
-                    Employment Categories ({employmentCategories.length})
-                  </CardTitle>
-                  <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Category
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create Employment Category</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="category-name">Name</Label>
-                          <Input
-                            id="category-name"
-                            placeholder="Enter category name..."
-                            value={newCategoryName}
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="category-display">Display Name</Label>
-                          <Input
-                            id="category-display"
-                            placeholder="Enter display name..."
-                            value={newCategoryDisplayName}
-                            onChange={(e) => setNewCategoryDisplayName(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="category-desc">Description</Label>
-                          <Input
-                            id="category-desc"
-                            placeholder="Enter description (optional)..."
-                            value={newCategoryDescription}
-                            onChange={(e) => setNewCategoryDescription(e.target.value)}
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => setIsCreateCategoryOpen(false)}>
-                            Cancel
+            <div className="space-y-6">
+              {/* Employment Categories Section */}
+              <Card className="bg-gradient-emerald border-emerald">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center gap-2 text-emerald-foreground">
+                      <Briefcase className="h-5 w-5" />
+                      Employment Categories ({employmentCategories.length})
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="bg-white/10 border-white/20 text-emerald-foreground hover:bg-white/20">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Category
                           </Button>
-                          <Button onClick={createEmploymentCategory}>
-                            Create Category
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {employmentCategories.length === 0 ? (
-                    <div className="col-span-full text-center py-8 text-muted-foreground">
-                      No employment categories found
-                    </div>
-                  ) : (
-                    employmentCategories.map((category) => (
-                      <Card key={category.id} className="border-l-4 border-l-primary">
-                        <CardContent className="p-4">
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-start">
-                              <h3 className="font-semibold text-sm">{category.display_name}</h3>
-                              <div className="flex gap-1">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setEditingCategory(category)}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => deleteEmploymentCategory(category.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Create Employment Category</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="category-name">Name</Label>
+                              <Input
+                                id="category-name"
+                                placeholder="Enter category name..."
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                              />
                             </div>
-                            <div className="text-xs text-muted-foreground space-y-1">
-                              <p><span className="font-medium">Name:</span> {category.name}</p>
-                              {category.description && <p><span className="font-medium">Description:</span> {category.description}</p>}
-                              <p><span className="font-medium">Created:</span> {new Date(category.created_at).toLocaleDateString()}</p>
+                            <div className="space-y-2">
+                              <Label htmlFor="category-display">Display Name</Label>
+                              <Input
+                                id="category-display"
+                                placeholder="Enter display name..."
+                                value={newCategoryDisplayName}
+                                onChange={(e) => setNewCategoryDisplayName(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="category-desc">Description</Label>
+                              <Input
+                                id="category-desc"
+                                placeholder="Enter description (optional)..."
+                                value={newCategoryDescription}
+                                onChange={(e) => setNewCategoryDescription(e.target.value)}
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={() => setIsCreateCategoryOpen(false)}>
+                                Cancel
+                              </Button>
+                              <Button onClick={createEmploymentCategory}>
+                                Create Category
+                              </Button>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                        </DialogContent>
+                      </Dialog>
+                      <Dialog open={isCreateSubProjectOpen} onOpenChange={setIsCreateSubProjectOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="bg-white/10 border-white/20 text-emerald-foreground hover:bg-white/20">
+                            <FolderPlus className="h-4 w-4 mr-2" />
+                            Add Sub-Project
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Create Sub-Project</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="subproject-category">Category</Label>
+                              <select 
+                                id="subproject-category"
+                                className="w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background rounded-md"
+                                value={selectedCategoryId}
+                                onChange={(e) => setSelectedCategoryId(e.target.value)}
+                              >
+                                <option value="">Select a category...</option>
+                                {employmentCategories.map((category) => (
+                                  <option key={category.id} value={category.id}>
+                                    {category.display_name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="subproject-name">Name</Label>
+                              <Input
+                                id="subproject-name"
+                                placeholder="Enter sub-project name..."
+                                value={newSubProjectName}
+                                onChange={(e) => setNewSubProjectName(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="subproject-display">Display Name</Label>
+                              <Input
+                                id="subproject-display"
+                                placeholder="Enter display name..."
+                                value={newSubProjectDisplayName}
+                                onChange={(e) => setNewSubProjectDisplayName(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="subproject-desc">Description</Label>
+                              <Input
+                                id="subproject-desc"
+                                placeholder="Enter description (optional)..."
+                                value={newSubProjectDescription}
+                                onChange={(e) => setNewSubProjectDescription(e.target.value)}
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={() => setIsCreateSubProjectOpen(false)}>
+                                Cancel
+                              </Button>
+                              <Button onClick={createSubProject}>
+                                Create Sub-Project
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {employmentCategories.length === 0 ? (
+                      <div className="text-center py-8 text-emerald-foreground/70">
+                        No employment categories found
+                      </div>
+                    ) : (
+                      employmentCategories.map((category) => {
+                        const categorySubProjects = allSubProjects.filter(
+                          (subProject: any) => subProject.category_id === category.id
+                        );
+                        
+                        return (
+                          <Card key={category.id} className="border-l-4 border-l-emerald bg-white/10">
+                            <CardHeader className="pb-3">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="font-semibold text-lg text-emerald-foreground">{category.display_name}</h3>
+                                  <p className="text-sm text-emerald-foreground/70 mt-1">{category.description}</p>
+                                  <p className="text-xs text-emerald-foreground/50 mt-1">
+                                    {categorySubProjects.length} sub-projects
+                                  </p>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setEditingCategory(category)}
+                                    className="bg-white/10 border-white/20 text-emerald-foreground hover:bg-white/20"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => deleteEmploymentCategory(category.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {categorySubProjects.length === 0 ? (
+                                  <div className="col-span-full text-center py-4 text-emerald-foreground/50 text-sm">
+                                    No sub-projects in this category
+                                  </div>
+                                ) : (
+                                  categorySubProjects.map((subProject: any) => (
+                                    <Card key={subProject.id} className="bg-white/5 border-emerald/30">
+                                      <CardContent className="p-3">
+                                        <div className="space-y-2">
+                                          <div className="flex justify-between items-start">
+                                            <h4 className="font-medium text-sm text-emerald-foreground">{subProject.display_name}</h4>
+                                            <div className="flex gap-1">
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => setEditingSubProject(subProject)}
+                                                className="h-6 w-6 p-0 text-emerald-foreground/70 hover:text-emerald-foreground hover:bg-white/10"
+                                              >
+                                                <Edit className="h-3 w-3" />
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => deleteSubProject(subProject.id)}
+                                                className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-white/10"
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                          <div className="text-xs text-emerald-foreground/60 space-y-1">
+                                            <p><span className="font-medium">Name:</span> {subProject.name}</p>
+                                            {subProject.description && (
+                                              <p><span className="font-medium">Description:</span> {subProject.description}</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  ))
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Edit Category Dialog */}
+            {editingCategory && (
+              <Dialog open={!!editingCategory} onOpenChange={() => setEditingCategory(null)}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit Employment Category</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input
+                        value={editingCategory.name}
+                        onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Display Name</Label>
+                      <Input
+                        value={editingCategory.display_name}
+                        onChange={(e) => setEditingCategory({...editingCategory, display_name: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Input
+                        value={editingCategory.description || ''}
+                        onChange={(e) => setEditingCategory({...editingCategory, description: e.target.value})}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setEditingCategory(null)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={updateEmploymentCategory}>
+                        Update Category
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+
+            {/* Edit Sub-Project Dialog */}
+            {editingSubProject && (
+              <Dialog open={!!editingSubProject} onOpenChange={() => setEditingSubProject(null)}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit Sub-Project</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input
+                        value={editingSubProject.name}
+                        onChange={(e) => setEditingSubProject({...editingSubProject, name: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Display Name</Label>
+                      <Input
+                        value={editingSubProject.display_name}
+                        onChange={(e) => setEditingSubProject({...editingSubProject, display_name: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Input
+                        value={editingSubProject.description || ''}
+                        onChange={(e) => setEditingSubProject({...editingSubProject, description: e.target.value})}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setEditingSubProject(null)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={updateSubProject}>
+                        Update Sub-Project
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
           </TabsContent>
 
 
