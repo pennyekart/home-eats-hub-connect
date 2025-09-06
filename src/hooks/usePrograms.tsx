@@ -27,6 +27,8 @@ export const usePrograms = (userCategoryName?: string) => {
   return useQuery({
     queryKey: ["programs", userCategoryName],
     queryFn: async () => {
+      console.log("usePrograms called with userCategoryName:", userCategoryName);
+      
       let query = supabase
         .from("programs")
         .select(`
@@ -37,14 +39,24 @@ export const usePrograms = (userCategoryName?: string) => {
 
       // Filter by category if user is not registered under "job card"
       if (userCategoryName && userCategoryName.toLowerCase() !== 'job card') {
+        console.log("Filtering by category:", userCategoryName);
         query = query.eq("employment_categories.name", userCategoryName);
+      } else {
+        console.log("No category filtering applied - showing all programs");
       }
 
       query = query.order("created_at", { ascending: false });
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching programs:", error);
+        throw error;
+      }
+      
+      console.log("Programs fetched:", data?.length, "programs");
+      console.log("Program categories:", data?.map(p => p.employment_categories?.name));
+      
       return data;
     },
   });
