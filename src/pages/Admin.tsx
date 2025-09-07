@@ -381,6 +381,36 @@ const Admin = () => {
     return panchayath?.name_english || panchayath?.name_malayalam || 'N/A';
   };
 
+  // Helper function to get applicant details by user_id
+  const getApplicantDetails = (userId: string) => {
+    // Try to find registration by user_id (might be mobile number) or customer_id
+    const registration = registrations.find(reg => 
+      reg.mobile_number === userId || 
+      reg.customer_id === userId ||
+      reg.id === userId
+    );
+    
+    if (registration) {
+      return {
+        name: registration.full_name || 'N/A',
+        mobile: registration.mobile_number || 'N/A',
+        panchayath: getPanchayathName(registration.panchayath_id),
+        ward: registration.ward || 'N/A',
+        customerId: registration.customer_id || 'N/A',
+        address: registration.address || 'N/A'
+      };
+    }
+    
+    return {
+      name: 'N/A',
+      mobile: userId.length === 10 ? userId : 'N/A', // Assume 10-digit user_id is mobile
+      panchayath: 'N/A',
+      ward: 'N/A',
+      customerId: 'N/A',
+      address: 'N/A'
+    };
+  };
+
   // Filter applications
   const filteredApplications = adminApplications.filter((application: any) => {
     if (applicationFilters.category && !application.programs?.employment_categories?.display_name?.includes(applicationFilters.category)) return false;
@@ -1171,16 +1201,31 @@ const Admin = () => {
                             </TableCell>
                             <TableCell>
                               <div className="space-y-1">
-                                <div className="font-medium">User ID: {application.user_id}</div>
-                                <div className="text-sm text-muted-foreground">
-                                  Mobile: Not Available
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                  Panchayath: Not Available
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                  Ward: Not Available
-                                </div>
+                                {(() => {
+                                  const applicantDetails = getApplicantDetails(application.user_id);
+                                  return (
+                                    <>
+                                      <div className="font-medium">{applicantDetails.name}</div>
+                                      <div className="text-sm text-muted-foreground">
+                                        Mobile: {applicantDetails.mobile}
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">
+                                        Customer ID: {applicantDetails.customerId}
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">
+                                        Panchayath: {applicantDetails.panchayath}
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">
+                                        Ward: {applicantDetails.ward}
+                                      </div>
+                                      {applicantDetails.address !== 'N/A' && (
+                                        <div className="text-xs text-muted-foreground mt-1 max-w-xs truncate" title={applicantDetails.address}>
+                                          Address: {applicantDetails.address}
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </TableCell>
                             <TableCell>
