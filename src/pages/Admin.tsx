@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Search, RefreshCw, Users, Tag, UserPlus, Trash2, Plus, Minus, Edit, Briefcase, FolderPlus, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, RefreshCw, Users, Tag, UserPlus, Trash2, Plus, Minus, Edit, Briefcase, FolderPlus, CheckCircle, XCircle, Clock, Filter } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTeams, useCreateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from '@/hooks/useTeams';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
 import { useCreateEmploymentCategory, useUpdateEmploymentCategory, useDeleteEmploymentCategory, useCreateSubProject, useUpdateSubProject, useDeleteSubProject } from '@/hooks/useAdminEmploymentCategories';
@@ -20,6 +21,15 @@ const Admin = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
+  
+  // Application filters
+  const [applicationFilters, setApplicationFilters] = useState({
+    panchayath: '',
+    category: '',
+    subProject: '',
+    program: '',
+    status: ''
+  });
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -344,6 +354,19 @@ const Admin = () => {
     const panchayath = panchayaths.find(p => p.id === panchayathId);
     return panchayath?.name_english || panchayath?.name_malayalam || 'N/A';
   };
+
+  // Filter applications
+  const filteredApplications = adminApplications.filter((application: any) => {
+    if (applicationFilters.category && !application.programs?.employment_categories?.display_name?.includes(applicationFilters.category)) return false;
+    if (applicationFilters.program && !application.programs?.program_name?.toLowerCase().includes(applicationFilters.program.toLowerCase())) return false;
+    if (applicationFilters.status && application.status !== applicationFilters.status) return false;
+    return true;
+  });
+
+  // Get unique values for filters
+  const uniqueCategories = [...new Set(adminApplications.map((app: any) => app.programs?.employment_categories?.display_name).filter(Boolean))];
+  const uniquePrograms = [...new Set(adminApplications.map((app: any) => app.programs?.program_name).filter(Boolean))];
+  const uniqueStatuses = ['pending', 'approved', 'rejected', 'cancelled'];
   return <div className="min-h-screen bg-gradient-to-br from-background via-purple/5 to-emerald/5 p-6">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
@@ -1024,175 +1047,268 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="applications" className="mt-6">
-            <div className="space-y-6">
-              {/* Program Applications */}
-              <Card className="bg-gradient-to-r from-success to-emerald border-success">
-                <CardHeader>
+            <Card className="bg-gradient-to-r from-success to-emerald border-success">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <CardTitle className="flex items-center gap-2 text-success-foreground">
                     <CheckCircle className="h-5 w-5" />
-                    Program Applications ({adminApplications.length})
+                    Program Applications ({filteredApplications.length} of {adminApplications.length})
                   </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {applicationsLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                      Loading applications...
-                    </div>
-                  ) : adminApplications.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No applications submitted yet.
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {adminApplications.map((application: any) => (
-                        <div key={application.id} className="bg-card border rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3">
-                                <h4 className="font-semibold text-foreground">
-                                  {application.programs?.program_name}
-                                </h4>
-                                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                  application.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                  application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {application.status}
-                                </div>
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Category: {application.programs?.employment_categories?.display_name}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                User ID: {application.user_id}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Applied on: {new Date(application.applied_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                            {application.status === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateApplicationStatusMutation.mutate({
-                                    applicationId: application.id,
-                                    status: 'approved'
-                                  })}
-                                  disabled={updateApplicationStatusMutation.isPending}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Approve
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => updateApplicationStatusMutation.mutate({
-                                    applicationId: application.id,
-                                    status: 'rejected'
-                                  })}
-                                  disabled={updateApplicationStatusMutation.isPending}
-                                >
-                                  <XCircle className="h-4 w-4 mr-1" />
-                                  Reject
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  
+                  {/* Filter Controls */}
+                  <div className="flex flex-wrap gap-2">
+                    <Select value={applicationFilters.category} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, category: value }))}>
+                      <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
+                        <SelectValue placeholder="Filter by Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Categories</SelectItem>
+                        {uniqueCategories.map((category) => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-              {/* Program Requests */}
-              <Card className="bg-gradient-to-r from-warning to-orange border-warning">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-warning-foreground">
-                    <Clock className="h-5 w-5" />
-                    Program Requests ({adminRequests.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {requestsLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                      Loading requests...
-                    </div>
-                  ) : adminRequests.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No requests submitted yet.
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {adminRequests.map((request: any) => (
-                        <div key={request.id} className="bg-card border rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3">
-                                <h4 className="font-semibold text-foreground capitalize">
-                                  {request.request_type.replace('-', ' ')} Request
-                                </h4>
-                                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                  request.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                  request.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {request.status}
+                    <Select value={applicationFilters.program} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, program: value }))}>
+                      <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
+                        <SelectValue placeholder="Filter by Program" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Programs</SelectItem>
+                        {uniquePrograms.map((program) => (
+                          <SelectItem key={program} value={program}>{program}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={applicationFilters.status} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, status: value }))}>
+                      <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
+                        <SelectValue placeholder="Filter by Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Statuses</SelectItem>
+                        {uniqueStatuses.map((status) => (
+                          <SelectItem key={status} value={status} className="capitalize">{status}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setApplicationFilters({panchayath: '', category: '', subProject: '', program: '', status: ''})}
+                      className="bg-white/10 border-white/20 text-success-foreground hover:bg-white/20"
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent>
+                {applicationsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                    Loading applications...
+                  </div>
+                ) : filteredApplications.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {adminApplications.length === 0 ? "No applications submitted yet." : "No applications match the current filters."}
+                  </div>
+                ) : (
+                  <div className="rounded-md border bg-card">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="font-semibold">Category</TableHead>
+                          <TableHead className="font-semibold">Sub-Project</TableHead>
+                          <TableHead className="font-semibold">Applied Program</TableHead>
+                          <TableHead className="font-semibold">Applicant Details</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Applied Date</TableHead>
+                          <TableHead className="font-semibold">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredApplications.map((application: any) => (
+                          <TableRow key={application.id} className="hover:bg-muted/50">
+                            <TableCell className="font-medium">
+                              {application.programs?.employment_categories?.display_name || 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              {application.programs?.sub_project_id ? (
+                                allSubProjects.find((sp: any) => sp.id === application.programs.sub_project_id)?.display_name || 'N/A'
+                              ) : 'N/A'}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {application.programs?.program_name || 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="font-medium">User ID: {application.user_id}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  Mobile: Not Available
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Panchayath: Not Available
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Ward: Not Available
                                 </div>
                               </div>
-                              {request.message && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Message: {request.message}
-                                </p>
-                              )}
-                              <p className="text-sm text-muted-foreground">
-                                User ID: {request.user_id}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Requested on: {new Date(request.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                            {request.status === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateRequestStatusMutation.mutate({
-                                    requestId: request.id,
-                                    status: 'approved'
-                                  })}
-                                  disabled={updateRequestStatusMutation.isPending}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Approve
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => updateRequestStatusMutation.mutate({
-                                    requestId: request.id,
-                                    status: 'rejected'
-                                  })}
-                                  disabled={updateRequestStatusMutation.isPending}
-                                >
-                                  <XCircle className="h-4 w-4 mr-1" />
-                                  Reject
-                                </Button>
+                            </TableCell>
+                            <TableCell>
+                              <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                                application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                application.status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {application.status}
                               </div>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(application.applied_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              {application.status === 'pending' ? (
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateApplicationStatusMutation.mutate({
+                                      applicationId: application.id,
+                                      status: 'approved'
+                                    })}
+                                    disabled={updateApplicationStatusMutation.isPending}
+                                    className="bg-green-600 hover:bg-green-700 h-7 px-2"
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => updateApplicationStatusMutation.mutate({
+                                      applicationId: application.id,
+                                      status: 'rejected'
+                                    })}
+                                    disabled={updateApplicationStatusMutation.isPending}
+                                    className="h-7 px-2"
+                                  >
+                                    <XCircle className="h-3 w-3 mr-1" />
+                                    Reject
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => updateApplicationStatusMutation.mutate({
+                                      applicationId: application.id,
+                                      status: 'cancelled'
+                                    })}
+                                    disabled={updateApplicationStatusMutation.isPending}
+                                    className="h-7 px-2"
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              ) : (
+                                <span className="text-sm text-muted-foreground">No actions</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Program Requests */}
+            <Card className="bg-gradient-to-r from-warning to-orange border-warning mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-warning-foreground">
+                  <Clock className="h-5 w-5" />
+                  Program Requests ({adminRequests.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {requestsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                    Loading requests...
+                  </div>
+                ) : adminRequests.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No requests submitted yet.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {adminRequests.map((request: any) => (
+                      <div key={request.id} className="bg-card border rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <h4 className="font-semibold text-foreground capitalize">
+                                {request.request_type.replace('-', ' ')} Request
+                              </h4>
+                              <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {request.status}
+                              </div>
+                            </div>
+                            {request.message && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Message: {request.message}
+                              </p>
                             )}
+                            <p className="text-sm text-muted-foreground">
+                              User ID: {request.user_id}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Requested on: {new Date(request.created_at).toLocaleDateString()}
+                            </p>
                           </div>
+                          {request.status === 'pending' && (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => updateRequestStatusMutation.mutate({
+                                  requestId: request.id,
+                                  status: 'approved'
+                                })}
+                                disabled={updateRequestStatusMutation.isPending}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => updateRequestStatusMutation.mutate({
+                                  requestId: request.id,
+                                  status: 'rejected'
+                                })}
+                                disabled={updateRequestStatusMutation.isPending}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
