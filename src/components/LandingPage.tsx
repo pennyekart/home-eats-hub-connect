@@ -130,7 +130,7 @@ const LandingPage = ({
   };
 
   const renderProfileView = () => (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto space-y-6">
       <Card className="border-primary/20 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
           <div className="flex items-center gap-4">
@@ -178,6 +178,50 @@ const LandingPage = ({
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Applied Programs Section */}
+      <Card className="border-secondary/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl text-foreground flex items-center gap-2">
+            <Briefcase className="h-5 w-5" />
+            Applied Programs
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">Programs you have applied to</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {applicationsLoading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading applications...</p>
+            </div>
+          ) : userApplications.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No program applications yet</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {userApplications.map((application: any) => (
+                <div key={application.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-foreground">{application.programs?.program_name}</h4>
+                    <p className="text-sm text-muted-foreground">{application.programs?.employment_categories?.display_name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Applied on: {new Date(application.applied_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                    application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {application.status}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -292,23 +336,16 @@ const LandingPage = ({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-foreground">Self-Employment Program</h1>
-        </div>
-      </header>
+      {/* Navigation - Sticky at top */}
+      <Navigation 
+        userData={userData} 
+        onLogout={onLogout} 
+        currentView={currentView} 
+        onViewChange={setCurrentView} 
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Navigation */}
-        <Navigation 
-          userData={userData} 
-          onLogout={onLogout} 
-          currentView={currentView} 
-          onViewChange={setCurrentView} 
-        />
-
         {/* Content based on current view */}
         {currentView === 'dashboard' && renderDashboardView()}
         {currentView === 'profile' && renderProfileView()}

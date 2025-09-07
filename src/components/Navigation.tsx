@@ -18,8 +18,8 @@ const Navigation = ({ userData, onLogout, currentView, onViewChange }: Navigatio
   ] as const;
 
   return (
-    <Card className="mb-6">
-      <CardContent className="p-4">
+    <nav className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+      <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground">
@@ -56,8 +56,8 @@ const Navigation = ({ userData, onLogout, currentView, onViewChange }: Navigatio
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </nav>
   );
 };
 
