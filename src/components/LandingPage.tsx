@@ -37,8 +37,8 @@ const LandingPage = ({
   const { data: allSubProjects = [], isLoading: subProjectsLoading } = useAllSubProjects();
   // Filter programs based on user's registration category
   console.log("userData in LandingPage:", userData);
-  console.log("userData.category_name:", userData?.category_name);
-  const { data: programs = [], isLoading: programsLoading } = usePrograms(userData?.category_name);
+  console.log("userData.category_name:", userData?.categories?.name_english);
+  const { data: programs = [], isLoading: programsLoading } = usePrograms(userData?.categories?.name_english);
   const createProgramMutation = useCreateProgram();
 
   // Group sub-projects by category for easy access

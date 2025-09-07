@@ -38,9 +38,9 @@ export const usePrograms = (userCategoryName?: string) => {
         `);
 
       // Filter by category if user is not registered under "job card"
-      if (userCategoryName && userCategoryName.toLowerCase() !== 'job card') {
+      if (userCategoryName && userCategoryName.toLowerCase() !== 'job card' && userCategoryName.toLowerCase() !== 'job card (special)') {
         console.log("Filtering by category:", userCategoryName);
-        query = query.eq("employment_categories.name", userCategoryName);
+        query = query.eq("employment_categories.name", userCategoryName.toLowerCase());
       } else {
         console.log("No category filtering applied - showing all programs");
       }
