@@ -9,7 +9,9 @@ import { Briefcase, Plus, User, Phone, MapPin, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
 import { usePrograms, useCreateProgram } from '@/hooks/usePrograms';
+import { useUserApplications, useApplyToProgram } from '@/hooks/useProgramApplications';
 import Navigation from '@/components/Navigation';
+import MultipleApplicationPopup from '@/components/MultipleApplicationPopup';
 
 interface LandingPageProps {
   userData: any;
@@ -23,6 +25,7 @@ const LandingPage = ({
   const [currentView, setCurrentView] = useState<'dashboard' | 'jobs' | 'programs' | 'profile'>('dashboard');
   const [showAddProgramForm, setShowAddProgramForm] = useState(false);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+  const [showMultipleApplicationPopup, setShowMultipleApplicationPopup] = useState(false);
   const [programForm, setProgramForm] = useState({
     programName: '',
     description: '',
@@ -40,6 +43,10 @@ const LandingPage = ({
   console.log("userData.category_name:", userData?.categories?.name_english);
   const { data: programs = [], isLoading: programsLoading } = usePrograms(userData?.categories?.name_english);
   const createProgramMutation = useCreateProgram();
+  
+  // Program applications
+  const { data: userApplications = [], isLoading: applicationsLoading } = useUserApplications();
+  const applyToProgramMutation = useApplyToProgram();
 
   // Group sub-projects by category for easy access
   const categorySubProjects = allSubProjects.reduce((acc, subProject) => {
@@ -106,6 +113,20 @@ const LandingPage = ({
 
   const handleFormChange = (field: string, value: string) => {
     setProgramForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleApplyToProgram = async (programId: string) => {
+    // Check if user already has an application
+    if (userApplications.length > 0) {
+      setShowMultipleApplicationPopup(true);
+      return;
+    }
+
+    try {
+      await applyToProgramMutation.mutateAsync(programId);
+    } catch (error) {
+      console.error('Error applying to program:', error);
+    }
   };
 
   const renderProfileView = () => (
@@ -331,11 +352,20 @@ const LandingPage = ({
                     <CardContent>
                       <p className="text-muted-foreground mb-4">{program.description}</p>
                       {program.qualifications && (
-                        <div>
+                        <div className="mb-4">
                           <h4 className="font-medium text-foreground mb-2">Required Qualifications:</h4>
                           <p className="text-sm text-muted-foreground">{program.qualifications}</p>
                         </div>
                       )}
+                       <div className="flex justify-end">
+                         <Button 
+                           onClick={() => handleApplyToProgram(program.id)}
+                           disabled={applyToProgramMutation.isPending || applicationsLoading}
+                           className="bg-primary text-primary-foreground hover:bg-primary/90"
+                         >
+                           {applyToProgramMutation.isPending ? 'Applying...' : 'Apply'}
+                         </Button>
+                       </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -349,6 +379,12 @@ const LandingPage = ({
             <p className="text-muted-foreground">Your programs will be displayed here</p>
           </div>
         )}
+
+        {/* Multiple Application Popup */}
+        <MultipleApplicationPopup 
+          isOpen={showMultipleApplicationPopup}
+          onClose={() => setShowMultipleApplicationPopup(false)}
+        />
 
         {/* Add Program Form */}
         {showAddProgramForm && (
