@@ -8,10 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Search, RefreshCw, Users, Tag, UserPlus, Trash2, Plus, Minus, Edit, Briefcase, FolderPlus } from 'lucide-react';
+import { Search, RefreshCw, Users, Tag, UserPlus, Trash2, Plus, Minus, Edit, Briefcase, FolderPlus, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useTeams, useCreateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from '@/hooks/useTeams';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
 import { useCreateEmploymentCategory, useUpdateEmploymentCategory, useDeleteEmploymentCategory, useCreateSubProject, useUpdateSubProject, useDeleteSubProject } from '@/hooks/useAdminEmploymentCategories';
+import { useAdminApplications, useAdminRequests, useUpdateApplicationStatus, useUpdateRequestStatus } from '@/hooks/useAdminApplications';
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -62,6 +63,12 @@ const Admin = () => {
   const createSubProjectMutation = useCreateSubProject();
   const updateSubProjectMutation = useUpdateSubProject();
   const deleteSubProjectMutation = useDeleteSubProject();
+
+  // Application and request hooks
+  const { data: adminApplications = [], isLoading: applicationsLoading } = useAdminApplications();
+  const { data: adminRequests = [], isLoading: requestsLoading } = useAdminRequests();
+  const updateApplicationStatusMutation = useUpdateApplicationStatus();
+  const updateRequestStatusMutation = useUpdateRequestStatus();
   const fetchPanchayaths = async () => {
     try {
       // Create a Supabase client to fetch from external database
@@ -397,7 +404,7 @@ const Admin = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="registrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Registrations ({filteredRegistrations.length})
@@ -413,6 +420,10 @@ const Admin = () => {
             <TabsTrigger value="teams" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
               Teams ({teams.length})
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Applications ({adminApplications.length})
             </TabsTrigger>
           </TabsList>
 
@@ -1010,6 +1021,178 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="applications" className="mt-6">
+            <div className="space-y-6">
+              {/* Program Applications */}
+              <Card className="bg-gradient-to-r from-success to-emerald border-success">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-success-foreground">
+                    <CheckCircle className="h-5 w-5" />
+                    Program Applications ({adminApplications.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {applicationsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                      Loading applications...
+                    </div>
+                  ) : adminApplications.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No applications submitted yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {adminApplications.map((application: any) => (
+                        <div key={application.id} className="bg-card border rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3">
+                                <h4 className="font-semibold text-foreground">
+                                  {application.programs?.program_name}
+                                </h4>
+                                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                  application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {application.status}
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Category: {application.programs?.employment_categories?.display_name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                User ID: {application.user_id}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Applied on: {new Date(application.applied_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            {application.status === 'pending' && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateApplicationStatusMutation.mutate({
+                                    applicationId: application.id,
+                                    status: 'approved'
+                                  })}
+                                  disabled={updateApplicationStatusMutation.isPending}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => updateApplicationStatusMutation.mutate({
+                                    applicationId: application.id,
+                                    status: 'rejected'
+                                  })}
+                                  disabled={updateApplicationStatusMutation.isPending}
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Program Requests */}
+              <Card className="bg-gradient-to-r from-warning to-orange border-warning">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-warning-foreground">
+                    <Clock className="h-5 w-5" />
+                    Program Requests ({adminRequests.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {requestsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                      Loading requests...
+                    </div>
+                  ) : adminRequests.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No requests submitted yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {adminRequests.map((request: any) => (
+                        <div key={request.id} className="bg-card border rounded-lg p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3">
+                                <h4 className="font-semibold text-foreground capitalize">
+                                  {request.request_type.replace('-', ' ')} Request
+                                </h4>
+                                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                  request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {request.status}
+                                </div>
+                              </div>
+                              {request.message && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Message: {request.message}
+                                </p>
+                              )}
+                              <p className="text-sm text-muted-foreground">
+                                User ID: {request.user_id}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Requested on: {new Date(request.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            {request.status === 'pending' && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateRequestStatusMutation.mutate({
+                                    requestId: request.id,
+                                    status: 'approved'
+                                  })}
+                                  disabled={updateRequestStatusMutation.isPending}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => updateRequestStatusMutation.mutate({
+                                    requestId: request.id,
+                                    status: 'rejected'
+                                  })}
+                                  disabled={updateRequestStatusMutation.isPending}
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
 
