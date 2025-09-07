@@ -1083,36 +1083,36 @@ const Admin = () => {
                   
                   {/* Filter Controls */}
                   <div className="flex flex-wrap gap-2">
-                    <Select value={applicationFilters.category} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, category: value }))}>
+                    <Select value={applicationFilters.category || "all-categories"} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, category: value === "all-categories" ? "" : value }))}>
                       <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
                         <SelectValue placeholder="Filter by Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Categories</SelectItem>
+                        <SelectItem value="all-categories">All Categories</SelectItem>
                         {uniqueCategories.map((category) => (
                           <SelectItem key={category} value={category}>{category}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
 
-                    <Select value={applicationFilters.program} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, program: value }))}>
+                    <Select value={applicationFilters.program || "all-programs"} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, program: value === "all-programs" ? "" : value }))}>
                       <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
                         <SelectValue placeholder="Filter by Program" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Programs</SelectItem>
+                        <SelectItem value="all-programs">All Programs</SelectItem>
                         {uniquePrograms.map((program) => (
                           <SelectItem key={program} value={program}>{program}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
 
-                    <Select value={applicationFilters.status} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, status: value }))}>
+                    <Select value={applicationFilters.status || "all-statuses"} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, status: value === "all-statuses" ? "" : value }))}>
                       <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
                         <SelectValue placeholder="Filter by Status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Statuses</SelectItem>
+                        <SelectItem value="all-statuses">All Statuses</SelectItem>
                         {uniqueStatuses.map((status) => (
                           <SelectItem key={status} value={status} className="capitalize">{status}</SelectItem>
                         ))}
