@@ -383,12 +383,27 @@ const Admin = () => {
 
   // Helper function to get applicant details by user_id
   const getApplicantDetails = (userId: string) => {
+    console.log('Looking for applicant with user_id:', userId);
+    console.log('Available registrations:', registrations.length);
+    console.log('Sample registration keys:', registrations.length > 0 ? Object.keys(registrations[0]) : 'no registrations');
+    
     // Try to find registration by user_id (might be mobile number) or customer_id
-    const registration = registrations.find(reg => 
-      reg.mobile_number === userId || 
-      reg.customer_id === userId ||
-      reg.id === userId
-    );
+    const registration = registrations.find(reg => {
+      const matches = reg.mobile_number === userId || 
+        reg.customer_id === userId ||
+        reg.id === userId;
+      
+      if (matches) {
+        console.log('Found matching registration:', {
+          id: reg.id,
+          mobile: reg.mobile_number,
+          customer_id: reg.customer_id,
+          full_name: reg.full_name
+        });
+      }
+      
+      return matches;
+    });
     
     if (registration) {
       return {
@@ -401,6 +416,7 @@ const Admin = () => {
       };
     }
     
+    console.log('No matching registration found for user_id:', userId);
     return {
       name: 'N/A',
       mobile: userId.length === 10 ? userId : 'N/A', // Assume 10-digit user_id is mobile
