@@ -5,10 +5,11 @@ import { useCreateRequest } from '@/hooks/useProgramApplications';
 interface MultipleApplicationPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  userData?: any;
 }
 
-const MultipleApplicationPopup = ({ isOpen, onClose }: MultipleApplicationPopupProps) => {
-  const createRequestMutation = useCreateRequest();
+const MultipleApplicationPopup = ({ isOpen, onClose, userData }: MultipleApplicationPopupProps) => {
+  const createRequestMutation = useCreateRequest(userData);
 
   const handleCancelRequest = async () => {
     try {

@@ -45,8 +45,8 @@ const LandingPage = ({
   const createProgramMutation = useCreateProgram();
   
   // Program applications
-  const { data: userApplications = [], isLoading: applicationsLoading } = useUserApplications();
-  const applyToProgramMutation = useApplyToProgram();
+  const { data: userApplications = [], isLoading: applicationsLoading } = useUserApplications(userData);
+  const applyToProgramMutation = useApplyToProgram(userData);
 
   // Group sub-projects by category for easy access
   const categorySubProjects = allSubProjects.reduce((acc, subProject) => {
@@ -417,11 +417,12 @@ const LandingPage = ({
           </div>
         )}
 
-        {/* Multiple Application Popup */}
-        <MultipleApplicationPopup 
-          isOpen={showMultipleApplicationPopup}
-          onClose={() => setShowMultipleApplicationPopup(false)}
-        />
+      {/* Multiple Application Popup */}
+      <MultipleApplicationPopup 
+        isOpen={showMultipleApplicationPopup} 
+        onClose={() => setShowMultipleApplicationPopup(false)} 
+        userData={userData}
+      />
 
         {/* Add Program Form */}
         {showAddProgramForm && (

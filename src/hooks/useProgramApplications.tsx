@@ -22,48 +22,40 @@ export interface ProgramRequest {
   updated_at: string;
 }
 
-export const useUserApplications = () => {
+export const useUserApplications = (userData?: any) => {
   return useQuery({
-    queryKey: ["user-applications"],
+    queryKey: ["user-applications", userData?.mobile_number],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        // For now, use a placeholder user_id since authentication isn't set up yet
-        const tempUserId = "00000000-0000-0000-0000-000000000000";
-        const { data, error } = await supabase
-          .from("program_applications")
-          .select(`
-            *,
-            programs!inner(program_name, description, employment_categories(display_name))
-          `)
-          .eq("user_id", tempUserId);
-        
-        if (error) throw error;
-        return data;
-      }
-
+      
+      // Use mobile number as unique identifier when no auth user exists
+      const userId = user?.id || userData?.mobile_number || "anonymous";
+      
       const { data, error } = await supabase
         .from("program_applications")
         .select(`
           *,
           programs!inner(program_name, description, employment_categories(display_name))
         `)
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
       
       if (error) throw error;
       return data;
     },
+    enabled: !!userData?.mobile_number, // Only run query when we have user data
   });
 };
 
-export const useApplyToProgram = () => {
+export const useApplyToProgram = (userData?: any) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (programId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || "00000000-0000-0000-0000-000000000000";
+      
+      // Use mobile number as unique identifier when no auth user exists
+      const userId = user?.id || userData?.mobile_number || "anonymous";
 
       const { data, error } = await supabase
         .from("program_applications")
@@ -77,7 +69,7 @@ export const useApplyToProgram = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, __, context) => {
       queryClient.invalidateQueries({ queryKey: ["user-applications"] });
       toast({
         title: "Success",
@@ -95,14 +87,16 @@ export const useApplyToProgram = () => {
   });
 };
 
-export const useCreateRequest = () => {
+export const useCreateRequest = (userData?: any) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ requestType, message }: { requestType: string; message?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || "00000000-0000-0000-0000-000000000000";
+      
+      // Use mobile number as unique identifier when no auth user exists
+      const userId = user?.id || userData?.mobile_number || "anonymous";
 
       const { data, error } = await supabase
         .from("program_requests")
