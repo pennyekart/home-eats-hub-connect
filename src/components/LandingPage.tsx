@@ -9,7 +9,7 @@ import { Briefcase, Plus, User, Phone, MapPin, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
 import { usePrograms, useCreateProgram } from '@/hooks/usePrograms';
-import { useUserApplications, useApplyToProgram } from '@/hooks/useProgramApplications';
+import { useUserApplications, useApplyToProgram, useCreateRequest } from '@/hooks/useProgramApplications';
 import Navigation from '@/components/Navigation';
 import MultipleApplicationPopup from '@/components/MultipleApplicationPopup';
 
@@ -47,6 +47,7 @@ const LandingPage = ({
   // Program applications
   const { data: userApplications = [], isLoading: applicationsLoading } = useUserApplications(userData);
   const applyToProgramMutation = useApplyToProgram(userData);
+  const createRequestMutation = useCreateRequest(userData);
 
   // Group sub-projects by category for easy access
   const categorySubProjects = allSubProjects.reduce((acc, subProject) => {
@@ -129,6 +130,28 @@ const LandingPage = ({
     }
   };
 
+  const handleRequestCancel = async (applicationId: string) => {
+    try {
+      await createRequestMutation.mutateAsync({
+        requestType: 'cancel',
+        message: `Request to cancel application ${applicationId}`
+      });
+    } catch (error) {
+      console.error('Error submitting cancel request:', error);
+    }
+  };
+
+  const handleRequestMultiProgram = async () => {
+    try {
+      await createRequestMutation.mutateAsync({
+        requestType: 'multi-program',
+        message: 'Request permission to apply for multiple programs'
+      });
+    } catch (error) {
+      console.error('Error submitting multi-program request:', error);
+    }
+  };
+
   const renderProfileView = () => (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card className="border-primary/20 shadow-lg">
@@ -202,21 +225,45 @@ const LandingPage = ({
           ) : (
             <div className="space-y-4">
               {userApplications.map((application: any) => (
-                <div key={application.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground">{application.programs?.program_name}</h4>
-                    <p className="text-sm text-muted-foreground">{application.programs?.employment_categories?.display_name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Applied on: {new Date(application.applied_at).toLocaleDateString()}
-                    </p>
+                <div key={application.id} className="p-4 rounded-lg bg-muted/50 border">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-foreground">{application.programs?.program_name}</h4>
+                      <p className="text-sm text-muted-foreground">{application.programs?.employment_categories?.display_name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Applied on: {new Date(application.applied_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {application.status}
+                    </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    application.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {application.status}
+                  
+                  {/* Request Actions */}
+                  <div className="flex gap-2 pt-3 border-t border-border/50">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRequestCancel(application.id)}
+                      disabled={createRequestMutation.isPending}
+                      className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      Request Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleRequestMultiProgram}
+                      disabled={createRequestMutation.isPending}
+                      className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+                    >
+                      Request Multi-Program
+                    </Button>
                   </div>
                 </div>
               ))}
