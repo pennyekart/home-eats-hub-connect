@@ -114,8 +114,7 @@ export const useUpdateRequestStatus = () => {
           const { error: appError } = await supabase
             .from("program_applications")
             .update({ status: applicationStatus })
-            .eq("user_id", requestData.user_id)
-            .eq("status", "pending"); // Only update pending applications
+            .eq("user_id", requestData.user_id);
 
           if (appError) {
             console.error("Error updating application status:", appError);
