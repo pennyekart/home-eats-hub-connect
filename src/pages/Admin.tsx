@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTeams, useCreateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from '@/hooks/useTeams';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
 import { useCreateEmploymentCategory, useUpdateEmploymentCategory, useDeleteEmploymentCategory, useCreateSubProject, useUpdateSubProject, useDeleteSubProject } from '@/hooks/useAdminEmploymentCategories';
-import { useAdminApplications, useAdminRequests, useUpdateApplicationStatus, useUpdateRequestStatus } from '@/hooks/useAdminApplications';
+import { useAdminApplications, useAdminRequests, useUpdateApplicationStatus, useUpdateRequestStatus, useDeleteApplication } from '@/hooks/useAdminApplications';
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -46,6 +46,7 @@ const Admin = () => {
   const [isCreateSubProjectOpen, setIsCreateSubProjectOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [editingSubProject, setEditingSubProject] = useState<any>(null);
+  const [editingApplication, setEditingApplication] = useState<any>(null);
   const {
     toast
   } = useToast();
@@ -79,6 +80,7 @@ const Admin = () => {
   const { data: adminRequests = [], isLoading: requestsLoading } = useAdminRequests();
   const updateApplicationStatusMutation = useUpdateApplicationStatus();
   const updateRequestStatusMutation = useUpdateRequestStatus();
+  const deleteApplicationMutation = useDeleteApplication();
   const fetchPanchayaths = async () => {
     try {
       // Create a Supabase client to fetch from external database
@@ -1251,49 +1253,73 @@ const Admin = () => {
                               {new Date(application.applied_at).toLocaleDateString()}
                             </TableCell>
                             <TableCell>
-                              {application.status === 'pending' ? (
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => updateApplicationStatusMutation.mutate({
-                                      applicationId: application.id,
-                                      status: 'approved'
-                                    })}
-                                    disabled={updateApplicationStatusMutation.isPending}
-                                    className="bg-green-600 hover:bg-green-700 h-7 px-2"
-                                  >
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => updateApplicationStatusMutation.mutate({
-                                      applicationId: application.id,
-                                      status: 'rejected'
-                                    })}
-                                    disabled={updateApplicationStatusMutation.isPending}
-                                    className="h-7 px-2"
-                                  >
-                                    <XCircle className="h-3 w-3 mr-1" />
-                                    Reject
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => updateApplicationStatusMutation.mutate({
-                                      applicationId: application.id,
-                                      status: 'cancelled'
-                                    })}
-                                    disabled={updateApplicationStatusMutation.isPending}
-                                    className="h-7 px-2"
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              ) : (
-                                <span className="text-sm text-muted-foreground">No actions</span>
-                              )}
+                              <div className="flex gap-1 flex-wrap">
+                                {/* Edit Button - Always available */}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingApplication(application)}
+                                  className="h-7 px-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                                >
+                                  <Edit className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                                
+                                {/* Delete Button - Always available */}
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => deleteApplicationMutation.mutate(application.id)}
+                                  disabled={deleteApplicationMutation.isPending}
+                                  className="h-7 px-2"
+                                >
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                  Delete
+                                </Button>
+                                
+                                {/* Status Actions - Only for pending applications */}
+                                {application.status === 'pending' && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => updateApplicationStatusMutation.mutate({
+                                        applicationId: application.id,
+                                        status: 'approved'
+                                      })}
+                                      disabled={updateApplicationStatusMutation.isPending}
+                                      className="bg-green-600 hover:bg-green-700 h-7 px-2"
+                                    >
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => updateApplicationStatusMutation.mutate({
+                                        applicationId: application.id,
+                                        status: 'rejected'
+                                      })}
+                                      disabled={updateApplicationStatusMutation.isPending}
+                                      className="h-7 px-2"
+                                    >
+                                      <XCircle className="h-3 w-3 mr-1" />
+                                      Reject
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => updateApplicationStatusMutation.mutate({
+                                        applicationId: application.id,
+                                        status: 'cancelled'
+                                      })}
+                                      disabled={updateApplicationStatusMutation.isPending}
+                                      className="h-7 px-2"
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1468,6 +1494,83 @@ const Admin = () => {
                   </Button>
                 </div>
               </div>}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Application Dialog */}
+        <Dialog open={!!editingApplication} onOpenChange={open => !open && setEditingApplication(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Application</DialogTitle>
+            </DialogHeader>
+            {editingApplication && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Applicant Details</Label>
+                  <div className="bg-muted p-3 rounded-md text-sm">
+                    {(() => {
+                      const applicantDetails = getApplicantDetails(editingApplication.user_id);
+                      return (
+                        <>
+                          <p><strong>Name:</strong> {applicantDetails.name}</p>
+                          <p><strong>Mobile:</strong> {applicantDetails.mobile}</p>
+                          <p><strong>Customer ID:</strong> {applicantDetails.customerId}</p>
+                          <p><strong>Panchayath:</strong> {applicantDetails.panchayath}</p>
+                          <p><strong>Ward:</strong> {applicantDetails.ward}</p>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Program</Label>
+                  <div className="bg-muted p-3 rounded-md text-sm">
+                    <p><strong>Program:</strong> {editingApplication.programs?.program_name || 'N/A'}</p>
+                    <p><strong>Category:</strong> {editingApplication.programs?.employment_categories?.display_name || 'N/A'}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-application-status">Status</Label>
+                  <Select 
+                    value={editingApplication.status} 
+                    onValueChange={(value) => setEditingApplication({
+                      ...editingApplication,
+                      status: value
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setEditingApplication(null)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      updateApplicationStatusMutation.mutate({
+                        applicationId: editingApplication.id,
+                        status: editingApplication.status
+                      });
+                      setEditingApplication(null);
+                    }}
+                    disabled={updateApplicationStatusMutation.isPending}
+                  >
+                    Update Application
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>

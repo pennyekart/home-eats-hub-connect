@@ -108,3 +108,37 @@ export const useUpdateRequestStatus = () => {
     },
   });
 };
+
+// Hook to delete an application
+export const useDeleteApplication = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (applicationId: string) => {
+      const { error } = await supabase
+        .from("program_applications")
+        .delete()
+        .eq("id", applicationId);
+
+      if (error) throw error;
+      return applicationId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
+      queryClient.invalidateQueries({ queryKey: ["user-applications"] });
+      toast({
+        title: "Success",
+        description: "Application deleted successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting application:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete application",
+        variant: "destructive",
+      });
+    },
+  });
+};
