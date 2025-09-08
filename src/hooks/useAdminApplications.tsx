@@ -111,13 +111,18 @@ export const useUpdateRequestStatus = () => {
 
         // Update all program applications for this user to the new status
         if (applicationStatus) {
-          const { error: appError } = await supabase
+          console.log("Updating applications for user:", requestData.user_id, "to status:", applicationStatus);
+          
+          const { data: updatedApps, error: appError } = await supabase
             .from("program_applications")
             .update({ status: applicationStatus })
-            .eq("user_id", requestData.user_id);
+            .eq("user_id", requestData.user_id)
+            .select();
 
           if (appError) {
             console.error("Error updating application status:", appError);
+          } else {
+            console.log("Successfully updated applications:", updatedApps);
           }
         }
       }
