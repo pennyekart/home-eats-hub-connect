@@ -387,25 +387,17 @@ const Admin = () => {
     console.log('Available registrations:', registrations.length);
     console.log('Sample registration keys:', registrations.length > 0 ? Object.keys(registrations[0]) : 'no registrations');
     
-    // Try to find registration by user_id (might be mobile number) or customer_id
-    const registration = registrations.find(reg => {
-      const matches = reg.mobile_number === userId || 
-        reg.customer_id === userId ||
-        reg.id === userId;
-      
-      if (matches) {
-        console.log('Found matching registration:', {
-          id: reg.id,
-          mobile: reg.mobile_number,
-          customer_id: reg.customer_id,
-          full_name: reg.full_name
-        });
-      }
-      
-      return matches;
-    });
+    // Find registration by user_id (this should match program_applications.user_id with registrations.id)
+    const registration = registrations.find(reg => reg.id === userId);
     
     if (registration) {
+      console.log('Found matching registration:', {
+        id: registration.id,
+        mobile: registration.mobile_number,
+        customer_id: registration.customer_id,
+        full_name: registration.full_name
+      });
+      
       return {
         name: registration.full_name || 'N/A',
         mobile: registration.mobile_number || 'N/A',
@@ -419,7 +411,7 @@ const Admin = () => {
     console.log('No matching registration found for user_id:', userId);
     return {
       name: 'N/A',
-      mobile: userId.length === 10 ? userId : 'N/A', // Assume 10-digit user_id is mobile
+      mobile: 'N/A',
       panchayath: 'N/A',
       ward: 'N/A',
       customerId: 'N/A',

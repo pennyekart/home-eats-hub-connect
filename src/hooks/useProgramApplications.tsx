@@ -24,12 +24,12 @@ export interface ProgramRequest {
 
 export const useUserApplications = (userData?: any) => {
   return useQuery({
-    queryKey: ["user-applications", userData?.mobile_number],
+    queryKey: ["user-applications", userData?.id],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Use mobile number as unique identifier when no auth user exists
-      const userId = user?.id || userData?.mobile_number || "anonymous";
+      // Use registration user_id as the identifier
+      const userId = user?.id || userData?.id || "anonymous";
       
       const { data, error } = await supabase
         .from("program_applications")
@@ -42,7 +42,7 @@ export const useUserApplications = (userData?: any) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!userData?.mobile_number, // Only run query when we have user data
+    enabled: !!userData?.id, // Only run query when we have registration user_id
   });
 };
 
@@ -54,8 +54,8 @@ export const useApplyToProgram = (userData?: any) => {
     mutationFn: async (programId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Use mobile number as unique identifier when no auth user exists
-      const userId = user?.id || userData?.mobile_number || "anonymous";
+      // Use registration user_id as the identifier
+      const userId = user?.id || userData?.id || "anonymous";
 
       const { data, error } = await supabase
         .from("program_applications")
@@ -95,8 +95,8 @@ export const useCreateRequest = (userData?: any) => {
     mutationFn: async ({ requestType, message }: { requestType: string; message?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Use mobile number as unique identifier when no auth user exists
-      const userId = user?.id || userData?.mobile_number || "anonymous";
+      // Use registration user_id as the identifier
+      const userId = user?.id || userData?.id || "anonymous";
 
       const { data, error } = await supabase
         .from("program_requests")
