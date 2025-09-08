@@ -80,6 +80,16 @@ export const useUpdateRequestStatus = () => {
 
   return useMutation({
     mutationFn: async ({ requestId, status }: { requestId: string; status: string }) => {
+      // First get the request details to know the type and user
+      const { data: requestData, error: requestError } = await supabase
+        .from("program_requests")
+        .select("*")
+        .eq("id", requestId)
+        .single();
+
+      if (requestError) throw requestError;
+
+      // Update the request status
       const { data, error } = await supabase
         .from("program_requests")
         .update({ status })
@@ -88,11 +98,38 @@ export const useUpdateRequestStatus = () => {
         .single();
 
       if (error) throw error;
+
+      // If request is approved, update corresponding program applications
+      if (status === 'approved' && requestData) {
+        let applicationStatus = '';
+        
+        if (requestData.request_type === 'cancellation') {
+          applicationStatus = 'cancelled';
+        } else if (requestData.request_type === 'multi-program') {
+          applicationStatus = 'multi-program';
+        }
+
+        // Update all program applications for this user to the new status
+        if (applicationStatus) {
+          const { error: appError } = await supabase
+            .from("program_applications")
+            .update({ status: applicationStatus })
+            .eq("user_id", requestData.user_id)
+            .eq("status", "pending"); // Only update pending applications
+
+          if (appError) {
+            console.error("Error updating application status:", appError);
+          }
+        }
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-requests"] });
       queryClient.invalidateQueries({ queryKey: ["user-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
+      queryClient.invalidateQueries({ queryKey: ["user-applications"] });
       toast({
         title: "Success",
         description: `Request ${variables.status} successfully`,
