@@ -103,7 +103,7 @@ export const useUpdateRequestStatus = () => {
       if (status === 'approved' && requestData) {
         let applicationStatus = '';
         
-        if (requestData.request_type === 'cancellation') {
+        if (requestData.request_type === 'cancel') {
           applicationStatus = 'cancelled';
         } else if (requestData.request_type === 'multi-program') {
           applicationStatus = 'multi-program';
