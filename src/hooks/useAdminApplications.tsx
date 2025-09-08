@@ -183,3 +183,37 @@ export const useDeleteApplication = () => {
     },
   });
 };
+
+// Hook to delete a request
+export const useDeleteRequest = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (requestId: string) => {
+      const { error } = await supabase
+        .from("program_requests")
+        .delete()
+        .eq("id", requestId);
+
+      if (error) throw error;
+      return requestId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["user-requests"] });
+      toast({
+        title: "Success",
+        description: "Request deleted successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete request",
+        variant: "destructive",
+      });
+    },
+  });
+};

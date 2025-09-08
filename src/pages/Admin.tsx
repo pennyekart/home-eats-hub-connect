@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTeams, useCreateTeam, useDeleteTeam, useAddTeamMember, useRemoveTeamMember } from '@/hooks/useTeams';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
 import { useCreateEmploymentCategory, useUpdateEmploymentCategory, useDeleteEmploymentCategory, useCreateSubProject, useUpdateSubProject, useDeleteSubProject } from '@/hooks/useAdminEmploymentCategories';
-import { useAdminApplications, useAdminRequests, useUpdateApplicationStatus, useUpdateRequestStatus, useDeleteApplication } from '@/hooks/useAdminApplications';
+import { useAdminApplications, useAdminRequests, useUpdateApplicationStatus, useUpdateRequestStatus, useDeleteApplication, useDeleteRequest } from '@/hooks/useAdminApplications';
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -81,6 +81,7 @@ const Admin = () => {
   const updateApplicationStatusMutation = useUpdateApplicationStatus();
   const updateRequestStatusMutation = useUpdateRequestStatus();
   const deleteApplicationMutation = useDeleteApplication();
+  const deleteRequestMutation = useDeleteRequest();
   const fetchPanchayaths = async () => {
     try {
       // Create a Supabase client to fetch from external database
@@ -1379,34 +1380,49 @@ const Admin = () => {
                               Requested on: {new Date(request.created_at).toLocaleDateString()}
                             </p>
                           </div>
-                          {request.status === 'pending' && (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => updateRequestStatusMutation.mutate({
-                                  requestId: request.id,
-                                  status: 'approved'
-                                })}
-                                disabled={updateRequestStatusMutation.isPending}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => updateRequestStatusMutation.mutate({
-                                  requestId: request.id,
-                                  status: 'rejected'
-                                })}
-                                disabled={updateRequestStatusMutation.isPending}
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
-                            </div>
-                          )}
+                          <div className="flex gap-2">
+                            {/* Delete Button - Always available */}
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => deleteRequestMutation.mutate(request.id)}
+                              disabled={deleteRequestMutation.isPending}
+                              className="h-7 px-2"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                            
+                            {/* Status Actions - Only for pending requests */}
+                            {request.status === 'pending' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateRequestStatusMutation.mutate({
+                                    requestId: request.id,
+                                    status: 'approved'
+                                  })}
+                                  disabled={updateRequestStatusMutation.isPending}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => updateRequestStatusMutation.mutate({
+                                    requestId: request.id,
+                                    status: 'rejected'
+                                  })}
+                                  disabled={updateRequestStatusMutation.isPending}
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

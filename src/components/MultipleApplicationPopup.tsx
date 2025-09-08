@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useCreateRequest } from '@/hooks/useProgramApplications';
+import { useCreateRequest, useUserApplications } from '@/hooks/useProgramApplications';
 
 interface MultipleApplicationPopupProps {
   isOpen: boolean;
@@ -10,6 +10,10 @@ interface MultipleApplicationPopupProps {
 
 const MultipleApplicationPopup = ({ isOpen, onClose, userData }: MultipleApplicationPopupProps) => {
   const createRequestMutation = useCreateRequest(userData);
+  const { data: userApplications = [] } = useUserApplications(userData);
+  
+  // Check if user has any cancelled applications
+  const hasCancelledApplications = userApplications.some((app: any) => app.status === 'cancelled');
 
   const handleCancelRequest = async () => {
     try {
@@ -46,14 +50,16 @@ const MultipleApplicationPopup = ({ isOpen, onClose, userData }: MultipleApplica
         </DialogHeader>
         
         <div className="flex flex-col gap-3 mt-6">
-          <Button 
-            onClick={handleCancelRequest}
-            variant="destructive"
-            className="w-full"
-            disabled={createRequestMutation.isPending}
-          >
-            Request Cancel
-          </Button>
+          {!hasCancelledApplications && (
+            <Button 
+              onClick={handleCancelRequest}
+              variant="destructive"
+              className="w-full"
+              disabled={createRequestMutation.isPending}
+            >
+              Request Cancel
+            </Button>
+          )}
           
           <Button 
             onClick={handleMultiProgramRequest}
