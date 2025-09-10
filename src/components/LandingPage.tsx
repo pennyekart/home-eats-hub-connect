@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Briefcase, Plus, User, Phone, MapPin, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
@@ -412,47 +414,59 @@ const LandingPage = ({
                 <p className="text-muted-foreground">No programs available yet. Be the first to add one!</p>
               </div>
             ) : (
-              <div className="grid lg:grid-cols-2 gap-6">
-                {programs.map((program: any) => (
-                  <Card key={program.id} className="border-primary/20 hover:shadow-lg transition-all">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-xl text-foreground whitespace-nowrap truncate">{program.program_name}</CardTitle>
-                          <CardDescription className="text-sm text-muted-foreground mt-1 whitespace-nowrap truncate">
-                            {program.employment_categories?.display_name}
-                            {program.sub_projects?.display_name && ` • ${program.sub_projects.display_name}`}
-                          </CardDescription>
-                        </div>
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          program.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          program.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {program.status}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground mb-4 line-clamp-2">{program.description}</p>
-                      {program.qualifications && (
-                        <div className="mb-4">
-                          <h4 className="font-medium text-foreground mb-2">Required Qualifications:</h4>
-                          <p className="text-sm text-muted-foreground whitespace-nowrap truncate">{program.qualifications}</p>
-                        </div>
-                      )}
-                       <div className="flex justify-end">
-                         <Button 
-                           onClick={() => handleApplyToProgram(program.id)}
-                           disabled={applyToProgramMutation.isPending || applicationsLoading}
-                           className="bg-primary text-primary-foreground hover:bg-primary/90"
-                         >
-                           {applyToProgramMutation.isPending ? 'Applying...' : 'Apply'}
-                         </Button>
-                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Program Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Qualifications</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {programs.map((program: any) => (
+                      <TableRow key={program.id}>
+                        <TableCell className="font-medium">{program.program_name}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div>{program.employment_categories?.display_name}</div>
+                            {program.sub_projects?.display_name && (
+                              <div className="text-muted-foreground text-xs">• {program.sub_projects.display_name}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-xs truncate text-sm" title={program.description}>
+                            {program.description}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-xs truncate text-sm" title={program.qualifications}>
+                            {program.qualifications || 'No specific requirements'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={program.status === 'pending' ? 'secondary' : program.status === 'approved' ? 'default' : 'outline'}>
+                            {program.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            onClick={() => handleApplyToProgram(program.id)}
+                            disabled={applyToProgramMutation.isPending || applicationsLoading}
+                            size="sm"
+                            className="bg-primary text-primary-foreground hover:bg-primary/90"
+                          >
+                            {applyToProgramMutation.isPending ? 'Applying...' : 'Apply'}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </div>
