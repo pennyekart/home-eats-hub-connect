@@ -418,8 +418,8 @@ const LandingPage = ({
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
-                          <CardTitle className="text-xl text-foreground">{program.program_name}</CardTitle>
-                          <CardDescription className="text-sm text-muted-foreground mt-1">
+                          <CardTitle className="text-xl text-foreground whitespace-nowrap truncate">{program.program_name}</CardTitle>
+                          <CardDescription className="text-sm text-muted-foreground mt-1 whitespace-nowrap truncate">
                             {program.employment_categories?.display_name}
                             {program.sub_projects?.display_name && ` • ${program.sub_projects.display_name}`}
                           </CardDescription>
@@ -434,11 +434,11 @@ const LandingPage = ({
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground mb-4">{program.description}</p>
+                      <p className="text-muted-foreground mb-4 line-clamp-2">{program.description}</p>
                       {program.qualifications && (
                         <div className="mb-4">
                           <h4 className="font-medium text-foreground mb-2">Required Qualifications:</h4>
-                          <p className="text-sm text-muted-foreground">{program.qualifications}</p>
+                          <p className="text-sm text-muted-foreground whitespace-nowrap truncate">{program.qualifications}</p>
                         </div>
                       )}
                        <div className="flex justify-end">
