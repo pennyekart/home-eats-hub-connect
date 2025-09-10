@@ -124,3 +124,70 @@ export const useCreateProgram = () => {
     },
   });
 };
+
+export const useUpdateProgram = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<CreateProgramData>) => {
+      const { data, error } = await supabase
+        .from("programs")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["programs"] });
+      queryClient.invalidateQueries({ queryKey: ["user-programs"] });
+      toast({
+        title: "Success",
+        description: "Program updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating program:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update program",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeleteProgram = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (programId: string) => {
+      const { error } = await supabase
+        .from("programs")
+        .delete()
+        .eq("id", programId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["programs"] });
+      queryClient.invalidateQueries({ queryKey: ["user-programs"] });
+      toast({
+        title: "Success",
+        description: "Program deleted successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting program:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete program",
+        variant: "destructive",
+      });
+    },
+  });
+};
