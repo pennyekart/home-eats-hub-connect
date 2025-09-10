@@ -17,17 +17,17 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 170 100% 35%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 200 100% 90%;
+    --secondary-foreground: 170 100% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 195 100% 95%;
+    --muted-foreground: 170 50% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 185 100% 85%;
+    --accent-foreground: 170 100% 25%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -55,32 +55,32 @@ All colors MUST be HSL.
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Custom gradients for job selection cards */
-    --gradient-job-selection: linear-gradient(135deg, 266 100% 85%, 310 100% 85%);
-    --gradient-add-program: linear-gradient(135deg, 142 100% 85%, 120 100% 75%);
-    --job-card: 266 100% 95%;
-    --job-card-foreground: 266 100% 20%;
-    --program-card: 142 100% 95%;
-    --program-card-foreground: 142 100% 20%;
+    --gradient-job-selection: linear-gradient(135deg, 170 100% 70%, 200 100% 75%);
+    --gradient-add-program: linear-gradient(135deg, 160 100% 65%, 180 100% 70%);
+    --job-card: 175 100% 90%;
+    --job-card-foreground: 170 100% 25%;
+    --program-card: 185 100% 90%;
+    --program-card-foreground: 180 100% 25%;
 
     /* Colorful admin design tokens */
-    --success: 142 76% 36%;
-    --success-foreground: 355 100% 97%;
+    --success: 160 76% 45%;
+    --success-foreground: 0 0% 100%;
     --warning: 48 96% 53%;
     --warning-foreground: 26 83% 14%;
-    --info: 213 94% 68%;
-    --info-foreground: 214 100% 97%;
+    --info: 200 94% 68%;
+    --info-foreground: 0 0% 100%;
     --purple: 262 83% 58%;
     --purple-foreground: 270 100% 98%;
     --orange: 25 95% 53%;
     --orange-foreground: 24 100% 15%;
-    --emerald: 160 84% 39%;
-    --emerald-foreground: 150 100% 97%;
+    --emerald: 170 84% 45%;
+    --emerald-foreground: 0 0% 100%;
     
     /* Colorful gradients */
     --gradient-purple: linear-gradient(135deg, 262 83% 58%, 270 80% 65%);
-    --gradient-emerald: linear-gradient(135deg, 160 84% 39%, 165 80% 45%);
+    --gradient-emerald: linear-gradient(135deg, 170 84% 45%, 180 80% 50%);
     --gradient-orange: linear-gradient(135deg, 25 95% 53%, 35 90% 60%);
-    --gradient-info: linear-gradient(135deg, 213 94% 68%, 220 90% 75%);
+    --gradient-info: linear-gradient(135deg, 190 94% 68%, 210 90% 75%);
   }
 
   .dark {
@@ -93,17 +93,17 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 180 100% 70%;
+    --primary-foreground: 170 100% 5%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 190 80% 15%;
+    --secondary-foreground: 180 100% 85%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 185 60% 20%;
+    --muted-foreground: 180 80% 75%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 175 70% 25%;
+    --accent-foreground: 180 100% 85%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
@@ -121,32 +121,32 @@ All colors MUST be HSL.
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Dark mode gradients */
-    --gradient-job-selection: linear-gradient(135deg, 266 80% 60%, 310 80% 60%);
-    --gradient-add-program: linear-gradient(135deg, 142 80% 60%, 120 80% 50%);
-    --job-card: 266 80% 15%;
-    --job-card-foreground: 266 100% 85%;
-    --program-card: 142 80% 15%;
-    --program-card-foreground: 142 100% 85%;
+    --gradient-job-selection: linear-gradient(135deg, 170 80% 45%, 200 80% 50%);
+    --gradient-add-program: linear-gradient(135deg, 160 80% 40%, 180 80% 45%);
+    --job-card: 175 80% 15%;
+    --job-card-foreground: 170 100% 85%;
+    --program-card: 185 80% 15%;
+    --program-card-foreground: 180 100% 85%;
 
     /* Dark mode colorful tokens */
-    --success: 142 69% 58%;
-    --success-foreground: 142 100% 5%;
+    --success: 160 69% 58%;
+    --success-foreground: 160 100% 5%;
     --warning: 48 96% 63%;
     --warning-foreground: 48 100% 8%;
-    --info: 213 94% 78%;
-    --info-foreground: 213 100% 5%;
+    --info: 200 94% 78%;
+    --info-foreground: 200 100% 5%;
     --purple: 262 83% 68%;
     --purple-foreground: 262 100% 5%;
     --orange: 25 95% 63%;
     --orange-foreground: 25 100% 8%;
-    --emerald: 160 84% 49%;
-    --emerald-foreground: 160 100% 5%;
+    --emerald: 170 84% 58%;
+    --emerald-foreground: 170 100% 5%;
     
     /* Dark mode colorful gradients */
     --gradient-purple: linear-gradient(135deg, 262 83% 68%, 270 80% 75%);
-    --gradient-emerald: linear-gradient(135deg, 160 84% 49%, 165 80% 55%);
+    --gradient-emerald: linear-gradient(135deg, 170 84% 58%, 180 80% 65%);
     --gradient-orange: linear-gradient(135deg, 25 95% 63%, 35 90% 70%);
-    --gradient-info: linear-gradient(135deg, 213 94% 78%, 220 90% 85%);
+    --gradient-info: linear-gradient(135deg, 200 94% 78%, 210 90% 85%);
   }
 }
 
