@@ -289,7 +289,7 @@ const LandingPage = ({
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-job-card">
               <Briefcase className="h-8 w-8 text-job-card-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold text-job-card-foreground">ലഭ്യമായ തൊഴിലവസരങ്ങൾ</CardTitle>
+            <CardTitle className="text-2xl font-bold text-job-card-foreground whitespace-nowrap">ലഭ്യമായ തൊഴിലവസരങ്ങൾ</CardTitle>
             <CardDescription className="text-job-card-foreground/80">ഇവിടെ വിരലമർത്തിയാൽ നിങ്ങൾക്ക് അനുയോജ്യമായ തൊഴിലവസരങ്ങൾ കണ്ടെത്താവുന്നതാണ് </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -399,7 +399,7 @@ const LandingPage = ({
         {currentView === 'jobs' && (
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">ലഭ്യമായ തൊഴിലവസരങ്ങൾ</h2>
+              <h2 className="text-3xl font-bold mb-4 whitespace-nowrap">ലഭ്യമായ തൊഴിലവസരങ്ങൾ</h2>
               <p className="text-muted-foreground">Available job opportunities and programs</p>
             </div>
             
