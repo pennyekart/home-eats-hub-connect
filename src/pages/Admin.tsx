@@ -1009,12 +1009,12 @@ const Admin = () => {
                         </div>
                         <div>
                           <Label htmlFor="program-subproject">Sub-Project (Optional)</Label>
-                          <Select value={selectedProgramSubProjectId} onValueChange={setSelectedProgramSubProjectId}>
+                          <Select value={selectedProgramSubProjectId} onValueChange={(v) => setSelectedProgramSubProjectId(v === 'none' ? '' : v)}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select sub-project" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">None</SelectItem>
+                              <SelectItem value="none">None</SelectItem>
                               {allSubProjects.filter((sub: any) => sub.category_id === selectedProgramCategoryId).map((subProject: any) => <SelectItem key={subProject.id} value={subProject.id}>
                                     {subProject.display_name}
                                   </SelectItem>)}
@@ -1133,15 +1133,15 @@ const Admin = () => {
                     </div>
                     <div>
                       <Label htmlFor="edit-program-subproject">Sub-Project</Label>
-                      <Select value={editingProgram.sub_project_id || ''} onValueChange={value => setEditingProgram({
+                      <Select value={editingProgram.sub_project_id || ''} onValueChange={(value) => setEditingProgram({
                     ...editingProgram,
-                    sub_project_id: value || null
+                    sub_project_id: value === 'none' ? null : value || null
                   })}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select sub-project" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {allSubProjects.filter((sub: any) => sub.category_id === editingProgram.category_id).map((subProject: any) => <SelectItem key={subProject.id} value={subProject.id}>
                                 {subProject.display_name}
                               </SelectItem>)}
