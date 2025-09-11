@@ -562,7 +562,7 @@ const Admin = () => {
         </Card>
 
         {/* Tabs for different sections */}
-        <Tabs defaultValue="registrations" className="w-full bg-fuchsia-400">
+        <Tabs defaultValue="registrations" className="w-full bg-fuchsia-900">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
