@@ -15,6 +15,8 @@ import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymen
 import { useCreateEmploymentCategory, useUpdateEmploymentCategory, useDeleteEmploymentCategory, useCreateSubProject, useUpdateSubProject, useDeleteSubProject } from '@/hooks/useAdminEmploymentCategories';
 import { useAdminApplications, useAdminRequests, useUpdateApplicationStatus, useUpdateRequestStatus, useDeleteApplication, useDeleteRequest } from '@/hooks/useAdminApplications';
 import { usePrograms, useCreateProgram, useUpdateProgram, useDeleteProgram } from '@/hooks/usePrograms';
+import { usePanchayaths } from '@/hooks/usePanchayaths';
+import { useCreatePanchayath, useUpdatePanchayath, useDeletePanchayath } from '@/hooks/useAdminPanchayaths';
 const Admin = () => {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -57,6 +59,14 @@ const Admin = () => {
   const [newProgramQualifications, setNewProgramQualifications] = useState('');
   const [selectedProgramCategoryId, setSelectedProgramCategoryId] = useState('');
   const [selectedProgramSubProjectId, setSelectedProgramSubProjectId] = useState('');
+
+  // Panchayath management states
+  const [isCreatePanchayathOpen, setIsCreatePanchayathOpen] = useState(false);
+  const [editingPanchayath, setEditingPanchayath] = useState<any>(null);
+  const [newPanchayathNameEnglish, setNewPanchayathNameEnglish] = useState('');
+  const [newPanchayathNameMalayalam, setNewPanchayathNameMalayalam] = useState('');
+  const [newPanchayathDistrict, setNewPanchayathDistrict] = useState('');
+  const [newPanchayathState, setNewPanchayathState] = useState('Kerala');
   const {
     toast
   } = useToast();
@@ -99,7 +109,7 @@ const Admin = () => {
   const deleteApplicationMutation = useDeleteApplication();
   const deleteRequestMutation = useDeleteRequest();
 
-  // Program hooks
+  // Program hooks  
   const {
     data: programs = [],
     isLoading: programsLoading
@@ -107,6 +117,15 @@ const Admin = () => {
   const createProgramMutation = useCreateProgram();
   const updateProgramMutation = useUpdateProgram();
   const deleteProgramMutation = useDeleteProgram();
+
+  // Panchayath hooks
+  const {
+    data: internalPanchayaths = [],
+    isLoading: panchayathsLoading
+  } = usePanchayaths();
+  const createPanchayathMutation = useCreatePanchayath();
+  const updatePanchayathMutation = useUpdatePanchayath();
+  const deletePanchayathMutation = useDeletePanchayath();
   const fetchPanchayaths = async () => {
     try {
       // Create a Supabase client to fetch from external database
@@ -437,6 +456,54 @@ const Admin = () => {
   const deleteProgram = (programId: string) => {
     deleteProgramMutation.mutate(programId);
   };
+
+  // Panchayath handlers
+  const createPanchayath = async () => {
+    if (!newPanchayathNameEnglish.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide panchayath name in English",
+        variant: "destructive"
+      });
+      return;
+    }
+    try {
+      await createPanchayathMutation.mutateAsync({
+        name_english: newPanchayathNameEnglish,
+        name_malayalam: newPanchayathNameMalayalam || undefined,
+        district: newPanchayathDistrict || undefined,
+        state: newPanchayathState
+      });
+      setNewPanchayathNameEnglish('');
+      setNewPanchayathNameMalayalam('');
+      setNewPanchayathDistrict('');
+      setNewPanchayathState('Kerala');
+      setIsCreatePanchayathOpen(false);
+    } catch (error) {
+      console.error('Create panchayath error:', error);
+    }
+  };
+
+  const updatePanchayath = async () => {
+    if (!editingPanchayath || !editingPanchayath.name_english) {
+      toast({
+        title: "Error",
+        description: "Please provide panchayath name in English",
+        variant: "destructive"
+      });
+      return;
+    }
+    try {
+      await updatePanchayathMutation.mutateAsync(editingPanchayath);
+      setEditingPanchayath(null);
+    } catch (error) {
+      console.error('Update panchayath error:', error);
+    }
+  };
+
+  const deletePanchayath = (panchayathId: string) => {
+    deletePanchayathMutation.mutate(panchayathId);
+  };
   const toggleMemberSelection = (registrationId: string) => {
     setSelectedMembers(prev => prev.includes(registrationId) ? prev.filter(id => id !== registrationId) : [...prev, registrationId]);
   };
@@ -563,7 +630,7 @@ const Admin = () => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="registrations" className="w-full bg-fuchsia-900">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Registrations ({filteredRegistrations.length})
@@ -579,6 +646,10 @@ const Admin = () => {
             <TabsTrigger value="programs" className="flex items-center gap-2">
               <FolderPlus className="h-4 w-4" />
               Programs ({programs.length})
+            </TabsTrigger>
+            <TabsTrigger value="panchayaths" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Panchayaths ({internalPanchayaths.length})
             </TabsTrigger>
             <TabsTrigger value="teams" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
@@ -1381,6 +1452,143 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="panchayaths" className="mt-6">
+            <Card className="bg-gradient-to-r from-primary to-accent border-primary">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2 text-primary-foreground">
+                    <Users className="h-5 w-5" />
+                    Panchayaths ({internalPanchayaths.length})
+                  </CardTitle>
+                  <Dialog open={isCreatePanchayathOpen} onOpenChange={setIsCreatePanchayathOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="bg-white/10 border-white/20 text-primary-foreground hover:bg-white/20">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Panchayath
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create Panchayath</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="new-panchayath-name-english">Name (English)*</Label>
+                          <Input 
+                            id="new-panchayath-name-english" 
+                            value={newPanchayathNameEnglish}
+                            onChange={(e) => setNewPanchayathNameEnglish(e.target.value)}
+                            placeholder="Enter panchayath name in English"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-panchayath-name-malayalam">Name (Malayalam)</Label>
+                          <Input 
+                            id="new-panchayath-name-malayalam" 
+                            value={newPanchayathNameMalayalam}
+                            onChange={(e) => setNewPanchayathNameMalayalam(e.target.value)}
+                            placeholder="Enter panchayath name in Malayalam"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-panchayath-district">District</Label>
+                          <Input 
+                            id="new-panchayath-district" 
+                            value={newPanchayathDistrict}
+                            onChange={(e) => setNewPanchayathDistrict(e.target.value)}
+                            placeholder="Enter district name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-panchayath-state">State</Label>
+                          <Input 
+                            id="new-panchayath-state" 
+                            value={newPanchayathState}
+                            onChange={(e) => setNewPanchayathState(e.target.value)}
+                            placeholder="Enter state name"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsCreatePanchayathOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={createPanchayath} disabled={createPanchayathMutation.isPending}>
+                            {createPanchayathMutation.isPending ? 'Creating...' : 'Create Panchayath'}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {panchayathsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                    Loading panchayaths...
+                  </div>
+                ) : internalPanchayaths.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No panchayaths found. Create your first panchayath to get started.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {internalPanchayaths.map((panchayath) => (
+                      <Card key={panchayath.id} className="cursor-pointer hover:shadow-md transition-shadow duration-200 border-l-4 border-l-primary">
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-semibold text-sm truncate">
+                                {panchayath.name_english}
+                              </h3>
+                              <div className="flex gap-1">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => setEditingPanchayath(panchayath)}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm" 
+                                  onClick={() => deletePanchayath(panchayath.id)}
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Malayalam:</span>
+                                <span>{panchayath.name_malayalam || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">District:</span>
+                                <span>{panchayath.district || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">State:</span>
+                                <span>{panchayath.state}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Created:</span>
+                                <span>{new Date(panchayath.created_at).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="applications" className="mt-6">
             <Card className="bg-gradient-to-r from-success to-emerald border-success">
               <CardHeader>
@@ -1767,6 +1975,71 @@ const Admin = () => {
                   </Button>
                 </div>
               </div>}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Panchayath Dialog */}
+        <Dialog open={!!editingPanchayath} onOpenChange={(open) => !open && setEditingPanchayath(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Panchayath</DialogTitle>
+            </DialogHeader>
+            {editingPanchayath && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-panchayath-name-english">Name (English)*</Label>
+                  <Input 
+                    id="edit-panchayath-name-english" 
+                    value={editingPanchayath.name_english}
+                    onChange={(e) => setEditingPanchayath({
+                      ...editingPanchayath,
+                      name_english: e.target.value
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-panchayath-name-malayalam">Name (Malayalam)</Label>
+                  <Input 
+                    id="edit-panchayath-name-malayalam" 
+                    value={editingPanchayath.name_malayalam || ''}
+                    onChange={(e) => setEditingPanchayath({
+                      ...editingPanchayath,
+                      name_malayalam: e.target.value
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-panchayath-district">District</Label>
+                  <Input 
+                    id="edit-panchayath-district" 
+                    value={editingPanchayath.district || ''}
+                    onChange={(e) => setEditingPanchayath({
+                      ...editingPanchayath,
+                      district: e.target.value
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-panchayath-state">State</Label>
+                  <Input 
+                    id="edit-panchayath-state" 
+                    value={editingPanchayath.state || 'Kerala'}
+                    onChange={(e) => setEditingPanchayath({
+                      ...editingPanchayath,
+                      state: e.target.value
+                    })}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setEditingPanchayath(null)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={updatePanchayath} disabled={updatePanchayathMutation.isPending}>
+                    {updatePanchayathMutation.isPending ? 'Updating...' : 'Update Panchayath'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
