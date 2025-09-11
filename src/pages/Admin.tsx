@@ -22,7 +22,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
-  
+
   // Application filters
   const [applicationFilters, setApplicationFilters] = useState({
     panchayath: '',
@@ -48,7 +48,7 @@ const Admin = () => {
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [editingSubProject, setEditingSubProject] = useState<any>(null);
   const [editingApplication, setEditingApplication] = useState<any>(null);
-  
+
   // Program management states
   const [isCreateProgramOpen, setIsCreateProgramOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<any>(null);
@@ -86,15 +86,24 @@ const Admin = () => {
   const deleteSubProjectMutation = useDeleteSubProject();
 
   // Application and request hooks
-  const { data: adminApplications = [], isLoading: applicationsLoading } = useAdminApplications();
-  const { data: adminRequests = [], isLoading: requestsLoading } = useAdminRequests();
+  const {
+    data: adminApplications = [],
+    isLoading: applicationsLoading
+  } = useAdminApplications();
+  const {
+    data: adminRequests = [],
+    isLoading: requestsLoading
+  } = useAdminRequests();
   const updateApplicationStatusMutation = useUpdateApplicationStatus();
   const updateRequestStatusMutation = useUpdateRequestStatus();
   const deleteApplicationMutation = useDeleteApplication();
   const deleteRequestMutation = useDeleteRequest();
-  
+
   // Program hooks
-  const { data: programs = [], isLoading: programsLoading } = usePrograms();
+  const {
+    data: programs = [],
+    isLoading: programsLoading
+  } = usePrograms();
   const createProgramMutation = useCreateProgram();
   const updateProgramMutation = useUpdateProgram();
   const deleteProgramMutation = useDeleteProgram();
@@ -105,11 +114,11 @@ const Admin = () => {
         createClient
       } = await import('@supabase/supabase-js');
       const externalSupabase = createClient('https://mbvxiphgomdtoaqzmbgv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idnhpcGhnb21kdG9hcXptYmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MjI5MzAsImV4cCI6MjA2OTk5ODkzMH0.k4JOmqn3q0bu2_txC5XxBfgb9YDyqrdK6YmJwSsjKlo');
-      
+
       // Try different column combinations as the schema might be different
       let data = null;
       let error = null;
-      
+
       // First try with the expected column names
       try {
         const result = await externalSupabase.from('panchayaths').select('id, name_english, name_malayalam').order('name_english', {
@@ -134,7 +143,6 @@ const Admin = () => {
           throw new Error('Panchayaths table schema mismatch');
         }
       }
-      
       if (error) throw error;
       setPanchayaths(data || []);
       console.log(`Loaded ${data?.length || 0} panchayaths successfully`);
@@ -410,7 +418,6 @@ const Admin = () => {
       console.error('Create program error:', error);
     }
   };
-
   const updateProgram = async () => {
     if (!editingProgram || !editingProgram.program_name || !editingProgram.description || !editingProgram.category_id) {
       toast({
@@ -427,7 +434,6 @@ const Admin = () => {
       console.error('Update program error:', error);
     }
   };
-
   const deleteProgram = (programId: string) => {
     deleteProgramMutation.mutate(programId);
   };
@@ -455,10 +461,9 @@ const Admin = () => {
     console.log('Looking for applicant with user_id:', userId);
     console.log('Available registrations:', registrations.length);
     console.log('Sample registration keys:', registrations.length > 0 ? Object.keys(registrations[0]) : 'no registrations');
-    
+
     // Find registration by user_id (this should match program_applications.user_id with registrations.id)
     const registration = registrations.find(reg => reg.id === userId);
-    
     if (registration) {
       console.log('Found matching registration:', {
         id: registration.id,
@@ -466,7 +471,6 @@ const Admin = () => {
         customer_id: registration.customer_id,
         full_name: registration.full_name
       });
-      
       return {
         name: registration.full_name || 'N/A',
         mobile: registration.mobile_number || 'N/A',
@@ -476,7 +480,6 @@ const Admin = () => {
         address: registration.address || 'N/A'
       };
     }
-    
     console.log('No matching registration found for user_id:', userId);
     return {
       name: 'N/A',
@@ -559,7 +562,7 @@ const Admin = () => {
         </Card>
 
         {/* Tabs for different sections */}
-        <Tabs defaultValue="registrations" className="w-full">
+        <Tabs defaultValue="registrations" className="w-full bg-gray-500">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -981,32 +984,15 @@ const Admin = () => {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="program-name">Program Name</Label>
-                          <Input
-                            id="program-name"
-                            value={newProgramName}
-                            onChange={(e) => setNewProgramName(e.target.value)}
-                            placeholder="Enter program name"
-                          />
+                          <Input id="program-name" value={newProgramName} onChange={e => setNewProgramName(e.target.value)} placeholder="Enter program name" />
                         </div>
                         <div>
                           <Label htmlFor="program-description">Description</Label>
-                          <textarea
-                            id="program-description"
-                            value={newProgramDescription}
-                            onChange={(e) => setNewProgramDescription(e.target.value)}
-                            className="w-full min-h-[100px] p-2 border rounded-md"
-                            placeholder="Enter program description"
-                          />
+                          <textarea id="program-description" value={newProgramDescription} onChange={e => setNewProgramDescription(e.target.value)} className="w-full min-h-[100px] p-2 border rounded-md" placeholder="Enter program description" />
                         </div>
                         <div>
                           <Label htmlFor="program-qualifications">Qualifications</Label>
-                          <textarea
-                            id="program-qualifications"
-                            value={newProgramQualifications}
-                            onChange={(e) => setNewProgramQualifications(e.target.value)}
-                            className="w-full min-h-[80px] p-2 border rounded-md"
-                            placeholder="Enter qualifications (optional)"
-                          />
+                          <textarea id="program-qualifications" value={newProgramQualifications} onChange={e => setNewProgramQualifications(e.target.value)} className="w-full min-h-[80px] p-2 border rounded-md" placeholder="Enter qualifications (optional)" />
                         </div>
                         <div>
                           <Label htmlFor="program-category">Category</Label>
@@ -1015,11 +1001,9 @@ const Admin = () => {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              {employmentCategories.map((category: any) => (
-                                <SelectItem key={category.id} value={category.id}>
+                              {employmentCategories.map((category: any) => <SelectItem key={category.id} value={category.id}>
                                   {category.display_name}
-                                </SelectItem>
-                              ))}
+                                </SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>
@@ -1031,13 +1015,9 @@ const Admin = () => {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="">None</SelectItem>
-                              {allSubProjects
-                                .filter((sub: any) => sub.category_id === selectedProgramCategoryId)
-                                .map((subProject: any) => (
-                                  <SelectItem key={subProject.id} value={subProject.id}>
+                              {allSubProjects.filter((sub: any) => sub.category_id === selectedProgramCategoryId).map((subProject: any) => <SelectItem key={subProject.id} value={subProject.id}>
                                     {subProject.display_name}
-                                  </SelectItem>
-                                ))}
+                                  </SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>
@@ -1063,22 +1043,16 @@ const Admin = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {programsLoading ? (
-                        <TableRow>
+                      {programsLoading ? <TableRow>
                           <TableCell colSpan={6} className="text-center py-8 text-primary-foreground/70">
                             <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
                             Loading programs...
                           </TableCell>
-                        </TableRow>
-                      ) : programs.length === 0 ? (
-                        <TableRow>
+                        </TableRow> : programs.length === 0 ? <TableRow>
                           <TableCell colSpan={6} className="text-center py-8 text-primary-foreground/70">
                             No programs found
                           </TableCell>
-                        </TableRow>
-                      ) : (
-                        programs.map((program: any) => (
-                          <TableRow key={program.id} className="border-white/10 hover:bg-white/5">
+                        </TableRow> : programs.map((program: any) => <TableRow key={program.id} className="border-white/10 hover:bg-white/5">
                             <TableCell className="text-primary-foreground font-medium">
                               {program.program_name}
                             </TableCell>
@@ -1092,37 +1066,21 @@ const Admin = () => {
                               {program.description}
                             </TableCell>
                             <TableCell className="text-primary-foreground">
-                              <span className={`px-2 py-1 rounded text-xs ${
-                                program.status === 'active' ? 'bg-green-500 text-white' :
-                                program.status === 'pending' ? 'bg-yellow-500 text-white' :
-                                'bg-gray-500 text-white'
-                              }`}>
+                              <span className={`px-2 py-1 rounded text-xs ${program.status === 'active' ? 'bg-green-500 text-white' : program.status === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-500 text-white'}`}>
                                 {program.status || 'pending'}
                               </span>
                             </TableCell>
                             <TableCell className="text-primary-foreground">
                               <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="bg-white/10 border-white/20 text-primary-foreground hover:bg-white/20"
-                                  onClick={() => setEditingProgram(program)}
-                                >
+                                <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-primary-foreground hover:bg-white/20" onClick={() => setEditingProgram(program)}>
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => deleteProgram(program.id)}
-                                  disabled={deleteProgramMutation.isPending}
-                                >
+                                <Button size="sm" variant="destructive" onClick={() => deleteProgram(program.id)} disabled={deleteProgramMutation.isPending}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </TableCell>
-                          </TableRow>
-                        ))
-                      )}
+                          </TableRow>)}
                     </TableBody>
                   </Table>
                 </div>
@@ -1130,8 +1088,7 @@ const Admin = () => {
             </Card>
 
             {/* Edit Program Dialog */}
-            {editingProgram && (
-              <Dialog open={!!editingProgram} onOpenChange={() => setEditingProgram(null)}>
+            {editingProgram && <Dialog open={!!editingProgram} onOpenChange={() => setEditingProgram(null)}>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>Edit Program</DialogTitle>
@@ -1139,79 +1096,55 @@ const Admin = () => {
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="edit-program-name">Program Name</Label>
-                      <Input
-                        id="edit-program-name"
-                        value={editingProgram.program_name || ''}
-                        onChange={(e) =>
-                          setEditingProgram({ ...editingProgram, program_name: e.target.value })
-                        }
-                        placeholder="Enter program name"
-                      />
+                      <Input id="edit-program-name" value={editingProgram.program_name || ''} onChange={e => setEditingProgram({
+                    ...editingProgram,
+                    program_name: e.target.value
+                  })} placeholder="Enter program name" />
                     </div>
                     <div>
                       <Label htmlFor="edit-program-description">Description</Label>
-                      <textarea
-                        id="edit-program-description"
-                        value={editingProgram.description || ''}
-                        onChange={(e) =>
-                          setEditingProgram({ ...editingProgram, description: e.target.value })
-                        }
-                        className="w-full min-h-[100px] p-2 border rounded-md"
-                        placeholder="Enter program description"
-                      />
+                      <textarea id="edit-program-description" value={editingProgram.description || ''} onChange={e => setEditingProgram({
+                    ...editingProgram,
+                    description: e.target.value
+                  })} className="w-full min-h-[100px] p-2 border rounded-md" placeholder="Enter program description" />
                     </div>
                     <div>
                       <Label htmlFor="edit-program-qualifications">Qualifications</Label>
-                      <textarea
-                        id="edit-program-qualifications"
-                        value={editingProgram.qualifications || ''}
-                        onChange={(e) =>
-                          setEditingProgram({ ...editingProgram, qualifications: e.target.value })
-                        }
-                        className="w-full min-h-[80px] p-2 border rounded-md"
-                        placeholder="Enter qualifications"
-                      />
+                      <textarea id="edit-program-qualifications" value={editingProgram.qualifications || ''} onChange={e => setEditingProgram({
+                    ...editingProgram,
+                    qualifications: e.target.value
+                  })} className="w-full min-h-[80px] p-2 border rounded-md" placeholder="Enter qualifications" />
                     </div>
                     <div>
                       <Label htmlFor="edit-program-category">Category</Label>
-                      <Select
-                        value={editingProgram.category_id}
-                        onValueChange={(value) =>
-                          setEditingProgram({ ...editingProgram, category_id: value })
-                        }
-                      >
+                      <Select value={editingProgram.category_id} onValueChange={value => setEditingProgram({
+                    ...editingProgram,
+                    category_id: value
+                  })}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {employmentCategories.map((category: any) => (
-                            <SelectItem key={category.id} value={category.id}>
+                          {employmentCategories.map((category: any) => <SelectItem key={category.id} value={category.id}>
                               {category.display_name}
-                            </SelectItem>
-                          ))}
+                            </SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label htmlFor="edit-program-subproject">Sub-Project</Label>
-                      <Select
-                        value={editingProgram.sub_project_id || ''}
-                        onValueChange={(value) =>
-                          setEditingProgram({ ...editingProgram, sub_project_id: value || null })
-                        }
-                      >
+                      <Select value={editingProgram.sub_project_id || ''} onValueChange={value => setEditingProgram({
+                    ...editingProgram,
+                    sub_project_id: value || null
+                  })}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select sub-project" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="">None</SelectItem>
-                          {allSubProjects
-                            .filter((sub: any) => sub.category_id === editingProgram.category_id)
-                            .map((subProject: any) => (
-                              <SelectItem key={subProject.id} value={subProject.id}>
+                          {allSubProjects.filter((sub: any) => sub.category_id === editingProgram.category_id).map((subProject: any) => <SelectItem key={subProject.id} value={subProject.id}>
                                 {subProject.display_name}
-                              </SelectItem>
-                            ))}
+                              </SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1220,8 +1153,7 @@ const Admin = () => {
                     </Button>
                   </div>
                 </DialogContent>
-              </Dialog>
-            )}
+              </Dialog>}
           </TabsContent>
 
 
@@ -1460,47 +1392,52 @@ const Admin = () => {
                   
                   {/* Filter Controls */}
                   <div className="flex flex-wrap gap-2">
-                    <Select value={applicationFilters.category || "all-categories"} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, category: value === "all-categories" ? "" : value }))}>
+                    <Select value={applicationFilters.category || "all-categories"} onValueChange={value => setApplicationFilters(prev => ({
+                    ...prev,
+                    category: value === "all-categories" ? "" : value
+                  }))}>
                       <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
                         <SelectValue placeholder="Filter by Category" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all-categories">All Categories</SelectItem>
-                        {uniqueCategories.map((category) => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
-                        ))}
+                        {uniqueCategories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}
                       </SelectContent>
                     </Select>
 
-                    <Select value={applicationFilters.program || "all-programs"} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, program: value === "all-programs" ? "" : value }))}>
+                    <Select value={applicationFilters.program || "all-programs"} onValueChange={value => setApplicationFilters(prev => ({
+                    ...prev,
+                    program: value === "all-programs" ? "" : value
+                  }))}>
                       <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
                         <SelectValue placeholder="Filter by Program" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all-programs">All Programs</SelectItem>
-                        {uniquePrograms.map((program) => (
-                          <SelectItem key={program} value={program}>{program}</SelectItem>
-                        ))}
+                        {uniquePrograms.map(program => <SelectItem key={program} value={program}>{program}</SelectItem>)}
                       </SelectContent>
                     </Select>
 
-                    <Select value={applicationFilters.status || "all-statuses"} onValueChange={(value) => setApplicationFilters(prev => ({ ...prev, status: value === "all-statuses" ? "" : value }))}>
+                    <Select value={applicationFilters.status || "all-statuses"} onValueChange={value => setApplicationFilters(prev => ({
+                    ...prev,
+                    status: value === "all-statuses" ? "" : value
+                  }))}>
                       <SelectTrigger className="w-48 bg-white/10 border-white/20 text-success-foreground">
                         <SelectValue placeholder="Filter by Status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all-statuses">All Statuses</SelectItem>
-                        {uniqueStatuses.map((status) => (
-                          <SelectItem key={status} value={status} className="capitalize">{status}</SelectItem>
-                        ))}
+                        {uniqueStatuses.map(status => <SelectItem key={status} value={status} className="capitalize">{status}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setApplicationFilters({panchayath: '', category: '', subProject: '', program: '', status: ''})}
-                      className="bg-white/10 border-white/20 text-success-foreground hover:bg-white/20"
-                    >
+                    <Button variant="outline" onClick={() => setApplicationFilters({
+                    panchayath: '',
+                    category: '',
+                    subProject: '',
+                    program: '',
+                    status: ''
+                  })} className="bg-white/10 border-white/20 text-success-foreground hover:bg-white/20">
                       <Filter className="h-4 w-4 mr-2" />
                       Clear Filters
                     </Button>
@@ -1509,17 +1446,12 @@ const Admin = () => {
               </CardHeader>
               
               <CardContent>
-                {applicationsLoading ? (
-                  <div className="flex items-center justify-center py-8">
+                {applicationsLoading ? <div className="flex items-center justify-center py-8">
                     <RefreshCw className="h-6 w-6 animate-spin mr-2" />
                     Loading applications...
-                  </div>
-                ) : filteredApplications.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
+                  </div> : filteredApplications.length === 0 ? <div className="text-center py-8 text-muted-foreground">
                     {adminApplications.length === 0 ? "No applications submitted yet." : "No applications match the current filters."}
-                  </div>
-                ) : (
-                  <div className="rounded-md border bg-card">
+                  </div> : <div className="rounded-md border bg-card">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -1533,15 +1465,12 @@ const Admin = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredApplications.map((application: any) => (
-                          <TableRow key={application.id} className="hover:bg-muted/50">
+                        {filteredApplications.map((application: any) => <TableRow key={application.id} className="hover:bg-muted/50">
                             <TableCell className="font-medium">
                               {application.programs?.employment_categories?.display_name || 'N/A'}
                             </TableCell>
                             <TableCell>
-                              {application.programs?.sub_project_id ? (
-                                allSubProjects.find((sp: any) => sp.id === application.programs.sub_project_id)?.display_name || 'N/A'
-                              ) : 'N/A'}
+                              {application.programs?.sub_project_id ? allSubProjects.find((sp: any) => sp.id === application.programs.sub_project_id)?.display_name || 'N/A' : 'N/A'}
                             </TableCell>
                             <TableCell className="font-medium">
                               {application.programs?.program_name || 'N/A'}
@@ -1549,9 +1478,8 @@ const Admin = () => {
                             <TableCell>
                               <div className="space-y-1">
                                 {(() => {
-                                  const applicantDetails = getApplicantDetails(application.user_id);
-                                  return (
-                                    <>
+                            const applicantDetails = getApplicantDetails(application.user_id);
+                            return <>
                                       <div className="font-medium">{applicantDetails.name}</div>
                                       <div className="text-sm text-muted-foreground">
                                         Mobile: {applicantDetails.mobile}
@@ -1565,24 +1493,15 @@ const Admin = () => {
                                       <div className="text-sm text-muted-foreground">
                                         Ward: {applicantDetails.ward}
                                       </div>
-                                      {applicantDetails.address !== 'N/A' && (
-                                        <div className="text-xs text-muted-foreground mt-1 max-w-xs truncate" title={applicantDetails.address}>
+                                      {applicantDetails.address !== 'N/A' && <div className="text-xs text-muted-foreground mt-1 max-w-xs truncate" title={applicantDetails.address}>
                                           Address: {applicantDetails.address}
-                                        </div>
-                                      )}
-                                    </>
-                                  );
-                                })()}
+                                        </div>}
+                                    </>;
+                          })()}
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                                application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                application.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                application.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                application.status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
+                              <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : application.status === 'approved' ? 'bg-green-100 text-green-800' : application.status === 'rejected' ? 'bg-red-100 text-red-800' : application.status === 'cancelled' ? 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800'}`}>
                                 {application.status}
                               </div>
                             </TableCell>
@@ -1592,78 +1511,46 @@ const Admin = () => {
                             <TableCell>
                               <div className="flex gap-1 flex-wrap">
                                 {/* Edit Button - Always available */}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setEditingApplication(application)}
-                                  className="h-7 px-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                                >
+                                <Button size="sm" variant="outline" onClick={() => setEditingApplication(application)} className="h-7 px-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
                                   <Edit className="h-3 w-3 mr-1" />
                                   Edit
                                 </Button>
                                 
                                 {/* Delete Button - Always available */}
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => deleteApplicationMutation.mutate(application.id)}
-                                  disabled={deleteApplicationMutation.isPending}
-                                  className="h-7 px-2"
-                                >
+                                <Button size="sm" variant="destructive" onClick={() => deleteApplicationMutation.mutate(application.id)} disabled={deleteApplicationMutation.isPending} className="h-7 px-2">
                                   <Trash2 className="h-3 w-3 mr-1" />
                                   Delete
                                 </Button>
                                 
                                 {/* Status Actions - Only for pending applications */}
-                                {application.status === 'pending' && (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => updateApplicationStatusMutation.mutate({
-                                        applicationId: application.id,
-                                        status: 'approved'
-                                      })}
-                                      disabled={updateApplicationStatusMutation.isPending}
-                                      className="bg-green-600 hover:bg-green-700 h-7 px-2"
-                                    >
+                                {application.status === 'pending' && <>
+                                    <Button size="sm" onClick={() => updateApplicationStatusMutation.mutate({
+                              applicationId: application.id,
+                              status: 'approved'
+                            })} disabled={updateApplicationStatusMutation.isPending} className="bg-green-600 hover:bg-green-700 h-7 px-2">
                                       <CheckCircle className="h-3 w-3 mr-1" />
                                       Approve
                                     </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      onClick={() => updateApplicationStatusMutation.mutate({
-                                        applicationId: application.id,
-                                        status: 'rejected'
-                                      })}
-                                      disabled={updateApplicationStatusMutation.isPending}
-                                      className="h-7 px-2"
-                                    >
+                                    <Button size="sm" variant="destructive" onClick={() => updateApplicationStatusMutation.mutate({
+                              applicationId: application.id,
+                              status: 'rejected'
+                            })} disabled={updateApplicationStatusMutation.isPending} className="h-7 px-2">
                                       <XCircle className="h-3 w-3 mr-1" />
                                       Reject
                                     </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => updateApplicationStatusMutation.mutate({
-                                        applicationId: application.id,
-                                        status: 'cancelled'
-                                      })}
-                                      disabled={updateApplicationStatusMutation.isPending}
-                                      className="h-7 px-2"
-                                    >
+                                    <Button size="sm" variant="outline" onClick={() => updateApplicationStatusMutation.mutate({
+                              applicationId: application.id,
+                              status: 'cancelled'
+                            })} disabled={updateApplicationStatusMutation.isPending} className="h-7 px-2">
                                       Cancel
                                     </Button>
-                                  </>
-                                )}
+                                  </>}
                               </div>
                             </TableCell>
-                          </TableRow>
-                        ))}
+                          </TableRow>)}
                       </TableBody>
                     </Table>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
             </Card>
 
@@ -1676,39 +1563,26 @@ const Admin = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {requestsLoading ? (
-                  <div className="flex items-center justify-center py-8">
+                {requestsLoading ? <div className="flex items-center justify-center py-8">
                     <RefreshCw className="h-6 w-6 animate-spin mr-2" />
                     Loading requests...
-                  </div>
-                ) : adminRequests.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
+                  </div> : adminRequests.length === 0 ? <div className="text-center py-8 text-muted-foreground">
                     No requests submitted yet.
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {adminRequests.map((request: any) => (
-                      <div key={request.id} className="bg-card border rounded-lg p-4">
+                  </div> : <div className="space-y-4">
+                    {adminRequests.map((request: any) => <div key={request.id} className="bg-card border rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3">
                               <h4 className="font-semibold text-foreground capitalize">
                                 {request.request_type.replace('-', ' ')} Request
                               </h4>
-                              <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                request.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                request.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
+                              <div className={`px-3 py-1 rounded-full text-xs font-medium ${request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : request.status === 'approved' ? 'bg-green-100 text-green-800' : request.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
                                 {request.status}
                               </div>
                             </div>
-                            {request.message && (
-                              <p className="text-sm text-muted-foreground mt-1">
+                            {request.message && <p className="text-sm text-muted-foreground mt-1">
                                 Message: {request.message}
-                              </p>
-                            )}
+                              </p>}
                             <p className="text-sm text-muted-foreground">
                               User ID: {request.user_id}
                             </p>
@@ -1718,52 +1592,32 @@ const Admin = () => {
                           </div>
                           <div className="flex gap-2">
                             {/* Delete Button - Always available */}
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => deleteRequestMutation.mutate(request.id)}
-                              disabled={deleteRequestMutation.isPending}
-                              className="h-7 px-2"
-                            >
+                            <Button size="sm" variant="destructive" onClick={() => deleteRequestMutation.mutate(request.id)} disabled={deleteRequestMutation.isPending} className="h-7 px-2">
                               <Trash2 className="h-3 w-3 mr-1" />
                               Delete
                             </Button>
                             
                             {/* Status Actions - Only for pending requests */}
-                            {request.status === 'pending' && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateRequestStatusMutation.mutate({
-                                    requestId: request.id,
-                                    status: 'approved'
-                                  })}
-                                  disabled={updateRequestStatusMutation.isPending}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
+                            {request.status === 'pending' && <>
+                                <Button size="sm" onClick={() => updateRequestStatusMutation.mutate({
+                          requestId: request.id,
+                          status: 'approved'
+                        })} disabled={updateRequestStatusMutation.isPending} className="bg-green-600 hover:bg-green-700">
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                   Approve
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => updateRequestStatusMutation.mutate({
-                                    requestId: request.id,
-                                    status: 'rejected'
-                                  })}
-                                  disabled={updateRequestStatusMutation.isPending}
-                                >
+                                <Button size="sm" variant="destructive" onClick={() => updateRequestStatusMutation.mutate({
+                          requestId: request.id,
+                          status: 'rejected'
+                        })} disabled={updateRequestStatusMutation.isPending}>
                                   <XCircle className="h-4 w-4 mr-1" />
                                   Reject
                                 </Button>
-                              </>
-                            )}
+                              </>}
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      </div>)}
+                  </div>}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1855,23 +1709,20 @@ const Admin = () => {
             <DialogHeader>
               <DialogTitle>Edit Application</DialogTitle>
             </DialogHeader>
-            {editingApplication && (
-              <div className="space-y-4">
+            {editingApplication && <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Applicant Details</Label>
                   <div className="bg-muted p-3 rounded-md text-sm">
                     {(() => {
-                      const applicantDetails = getApplicantDetails(editingApplication.user_id);
-                      return (
-                        <>
+                  const applicantDetails = getApplicantDetails(editingApplication.user_id);
+                  return <>
                           <p><strong>Name:</strong> {applicantDetails.name}</p>
                           <p><strong>Mobile:</strong> {applicantDetails.mobile}</p>
                           <p><strong>Customer ID:</strong> {applicantDetails.customerId}</p>
                           <p><strong>Panchayath:</strong> {applicantDetails.panchayath}</p>
                           <p><strong>Ward:</strong> {applicantDetails.ward}</p>
-                        </>
-                      );
-                    })()}
+                        </>;
+                })()}
                   </div>
                 </div>
                 
@@ -1885,13 +1736,10 @@ const Admin = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="edit-application-status">Status</Label>
-                  <Select 
-                    value={editingApplication.status} 
-                    onValueChange={(value) => setEditingApplication({
-                      ...editingApplication,
-                      status: value
-                    })}
-                  >
+                  <Select value={editingApplication.status} onValueChange={value => setEditingApplication({
+                ...editingApplication,
+                status: value
+              })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -1908,21 +1756,17 @@ const Admin = () => {
                   <Button variant="outline" onClick={() => setEditingApplication(null)}>
                     Cancel
                   </Button>
-                  <Button 
-                    onClick={() => {
-                      updateApplicationStatusMutation.mutate({
-                        applicationId: editingApplication.id,
-                        status: editingApplication.status
-                      });
-                      setEditingApplication(null);
-                    }}
-                    disabled={updateApplicationStatusMutation.isPending}
-                  >
+                  <Button onClick={() => {
+                updateApplicationStatusMutation.mutate({
+                  applicationId: editingApplication.id,
+                  status: editingApplication.status
+                });
+                setEditingApplication(null);
+              }} disabled={updateApplicationStatusMutation.isPending}>
                     Update Application
                   </Button>
                 </div>
-              </div>
-            )}
+              </div>}
           </DialogContent>
         </Dialog>
       </div>
