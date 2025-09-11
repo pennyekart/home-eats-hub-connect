@@ -126,59 +126,7 @@ const Admin = () => {
   const createPanchayathMutation = useCreatePanchayath();
   const updatePanchayathMutation = useUpdatePanchayath();
   const deletePanchayathMutation = useDeletePanchayath();
-  const fetchPanchayaths = async () => {
-    try {
-      // Create a Supabase client to fetch from external database
-      const {
-        createClient
-      } = await import('@supabase/supabase-js');
-      const externalSupabase = createClient('https://mbvxiphgomdtoaqzmbgv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1idnhpcGhnb21kdG9hcXptYmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MjI5MzAsImV4cCI6MjA2OTk5ODkzMH0.k4JOmqn3q0bu2_txC5XxBfgb9YDyqrdK6YmJwSsjKlo');
-
-      // Try different column combinations as the schema might be different
-      let data = null;
-      let error = null;
-
-      // First try with the expected column names
-      try {
-        const result = await externalSupabase.from('panchayaths').select('id, name_english, name_malayalam').order('name_english', {
-          ascending: true
-        });
-        data = result.data;
-        error = result.error;
-      } catch (schemaError) {
-        // If columns don't exist, try with different column names
-        try {
-          const result = await externalSupabase.from('panchayaths').select('id, name, display_name').order('name', {
-            ascending: true
-          });
-          data = result.data;
-          error = result.error;
-        } catch (fallbackError) {
-          // If still fails, try to get basic structure
-          const result = await externalSupabase.from('panchayaths').select('*').limit(1);
-          if (result.data && result.data.length > 0) {
-            console.log('Available panchayaths columns:', Object.keys(result.data[0]));
-          }
-          throw new Error('Panchayaths table schema mismatch');
-        }
-      }
-      if (error) throw error;
-      setPanchayaths(data || []);
-      console.log(`Loaded ${data?.length || 0} panchayaths successfully`);
-    } catch (error) {
-      console.error('Panchayaths fetch error:', error);
-      // Set empty array instead of showing error to user, as this doesn't break core functionality
-      setPanchayaths([]);
-      // Only show error if it's not a schema mismatch (which is expected)
-      if (!error.message?.includes('does not exist') && !error.message?.includes('schema mismatch')) {
-        toast({
-          title: "Warning",
-          description: "Panchayaths data unavailable - other functions will work normally",
-          variant: "default"
-        });
-      }
-    }
-  };
+  // Remove the local fetchPanchayaths function - we now use the hook directly
   const fetchCategories = async () => {
     try {
       // Create a Supabase client to fetch from external database
@@ -510,7 +458,7 @@ const Admin = () => {
   useEffect(() => {
     fetchRegistrations();
     fetchCategories();
-    fetchPanchayaths();
+    // Panchayaths are now loaded via the hook
   }, []);
   const filteredRegistrations = registrations.filter(reg => reg.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || reg.mobile_number?.includes(searchTerm) || reg.address?.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -519,7 +467,7 @@ const Admin = () => {
 
   // Helper function to get panchayath name by ID
   const getPanchayathName = (panchayathId: string) => {
-    const panchayath = panchayaths.find(p => p.id === panchayathId);
+    const panchayath = internalPanchayaths.find(p => p.panchayath_id === panchayathId || p.id === panchayathId);
     return panchayath?.name_english || panchayath?.name_malayalam || 'N/A';
   };
 
@@ -619,7 +567,7 @@ const Admin = () => {
               <Button onClick={() => {
               fetchRegistrations();
               fetchCategories();
-              fetchPanchayaths();
+              // Panchayaths will refresh automatically via the hook
             }} disabled={loading} variant="outline" className="bg-white/10 border-white/20 text-orange-foreground hover:bg-white/20">
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
