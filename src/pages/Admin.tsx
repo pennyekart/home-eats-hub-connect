@@ -562,7 +562,7 @@ const Admin = () => {
         </Card>
 
         {/* Tabs for different sections */}
-        <Tabs defaultValue="registrations" className="w-full bg-gray-500">
+        <Tabs defaultValue="registrations" className="w-full bg-fuchsia-600">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="registrations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -1009,7 +1009,7 @@ const Admin = () => {
                         </div>
                         <div>
                           <Label htmlFor="program-subproject">Sub-Project (Optional)</Label>
-                          <Select value={selectedProgramSubProjectId} onValueChange={(v) => setSelectedProgramSubProjectId(v === 'none' ? '' : v)}>
+                          <Select value={selectedProgramSubProjectId} onValueChange={v => setSelectedProgramSubProjectId(v === 'none' ? '' : v)}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select sub-project" />
                             </SelectTrigger>
@@ -1133,7 +1133,7 @@ const Admin = () => {
                     </div>
                     <div>
                       <Label htmlFor="edit-program-subproject">Sub-Project</Label>
-                      <Select value={editingProgram.sub_project_id || ''} onValueChange={(value) => setEditingProgram({
+                      <Select value={editingProgram.sub_project_id || ''} onValueChange={value => setEditingProgram({
                     ...editingProgram,
                     sub_project_id: value === 'none' ? null : value || null
                   })}>
