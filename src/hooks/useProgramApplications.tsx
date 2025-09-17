@@ -46,6 +46,24 @@ export const useUserApplications = (userData?: any) => {
   });
 };
 
+export const useAllApplications = () => {
+  return useQuery({
+    queryKey: ["all-applications"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("program_applications")
+        .select(`
+          *,
+          programs(program_name, description, employment_categories(display_name))
+        `)
+        .order("applied_at", { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+};
+
 export const useApplyToProgram = (userData?: any) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

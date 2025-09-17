@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Users, FileText, Calendar, Eye } from 'lucide-react';
 import { usePrograms } from '@/hooks/usePrograms';
-import { useUserApplications } from '@/hooks/useProgramApplications';
+import { useAllApplications } from '@/hooks/useProgramApplications';
 import { useTeams } from '@/hooks/useTeams';
 import { format } from 'date-fns';
 
@@ -15,7 +15,7 @@ const TeamAdmin = () => {
   const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
 
   const { data: programs, isLoading: programsLoading } = usePrograms();
-  const { data: applications, isLoading: applicationsLoading } = useUserApplications();
+  const { data: applications, isLoading: applicationsLoading } = useAllApplications();
   const { data: teams, isLoading: teamsLoading } = useTeams();
 
   const filteredPrograms = programs?.filter(program =>
