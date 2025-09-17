@@ -105,6 +105,41 @@ export const useApplyToProgram = (userData?: any) => {
   });
 };
 
+export const useUpdateApplicationStatus = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ applicationId, status }: { applicationId: string; status: string }) => {
+      const { data, error } = await supabase
+        .from("program_applications")
+        .update({ status })
+        .eq("id", applicationId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["all-applications"] });
+      queryClient.invalidateQueries({ queryKey: ["user-applications"] });
+      toast({
+        title: "Success",
+        description: `Application ${variables.status} successfully`,
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating application status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update application status",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useCreateRequest = (userData?: any) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
