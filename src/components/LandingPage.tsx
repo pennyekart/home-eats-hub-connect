@@ -28,6 +28,7 @@ const LandingPage = ({
   const [showAddProgramForm, setShowAddProgramForm] = useState(false);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [showMultipleApplicationPopup, setShowMultipleApplicationPopup] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [programForm, setProgramForm] = useState({
     programName: '',
     description: '',
@@ -152,6 +153,47 @@ const LandingPage = ({
     } catch (error) {
       console.error('Error submitting multi-program request:', error);
     }
+  };
+
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
+
+  // Helper function to group programs by category
+  const groupProgramsByCategory = (programs: any[]) => {
+    return programs.reduce((acc: any, program: any) => {
+      const categoryId = program.category_id;
+      const categoryName = program.employment_categories?.display_name || 'Unknown Category';
+      
+      if (!acc[categoryId]) {
+        acc[categoryId] = {
+          category: {
+            id: categoryId,
+            name: categoryName
+          },
+          subProjects: {}
+        };
+      }
+      
+      const subProjectId = program.sub_project_id || 'no-subproject';
+      const subProjectName = program.sub_projects?.display_name || 'General Programs';
+      
+      if (!acc[categoryId].subProjects[subProjectId]) {
+        acc[categoryId].subProjects[subProjectId] = {
+          subProject: {
+            id: subProjectId,
+            name: subProjectName
+          },
+          programs: []
+        };
+      }
+      
+      acc[categoryId].subProjects[subProjectId].programs.push(program);
+      return acc;
+    }, {});
   };
 
   const renderProfileView = () => (
@@ -415,105 +457,105 @@ const LandingPage = ({
               </div>
             ) : (
               <div className="space-y-8">
-                {(() => {
-                  // Group programs by category
-                  const categoryGroups = programs.reduce((acc: any, program: any) => {
-                    const categoryId = program.category_id;
-                    const categoryName = program.employment_categories?.display_name || 'Unknown Category';
-                    
-                    if (!acc[categoryId]) {
-                      acc[categoryId] = {
-                        category: {
-                          id: categoryId,
-                          name: categoryName
-                        },
-                        subProjects: {}
-                      };
-                    }
-                    
-                    const subProjectId = program.sub_project_id || 'no-subproject';
-                    const subProjectName = program.sub_projects?.display_name || 'General Programs';
-                    
-                    if (!acc[categoryId].subProjects[subProjectId]) {
-                      acc[categoryId].subProjects[subProjectId] = {
-                        subProject: {
-                          id: subProjectId,
-                          name: subProjectName
-                        },
-                        programs: []
-                      };
-                    }
-                    
-                    acc[categoryId].subProjects[subProjectId].programs.push(program);
-                    return acc;
-                  }, {});
-
-                  return Object.values(categoryGroups).map((categoryGroup: any) => (
+                {(Object.values(groupProgramsByCategory(programs)) as any[]).map((categoryGroup: any) => {
+                  const isExpanded = expandedCategories[categoryGroup.category.id];
+                  const totalPrograms = Object.values(categoryGroup.subProjects).reduce((sum: number, sp: any) => sum + (sp?.programs?.length || 0), 0);
+                  
+                  return (
                     <Card key={categoryGroup.category.id} className="border-primary/20 shadow-lg">
-                      <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
-                        <CardTitle className="text-2xl text-foreground flex items-center gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-                            <Briefcase className="h-6 w-6 text-primary-foreground" />
+                      <CardHeader 
+                        className="bg-gradient-to-r from-primary/5 to-secondary/5 cursor-pointer hover:from-primary/10 hover:to-secondary/10 transition-colors"
+                        onClick={() => toggleCategoryExpansion(categoryGroup.category.id)}
+                      >
+                        <CardTitle className="text-2xl text-foreground flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+                              <Briefcase className="h-6 w-6 text-primary-foreground" />
+                            </div>
+                            {categoryGroup.category.name}
                           </div>
-                          {categoryGroup.category.name}
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-sm">
+                              {String(totalPrograms)} programs
+                            </Badge>
+                            <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                              ▼
+                            </div>
+                          </div>
                         </CardTitle>
                         <CardDescription className="text-muted-foreground">
-                          Employment programs and opportunities in this category
+                          Click to view employment programs and opportunities in this category
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="pt-6">
-                        <div className="space-y-6">
-                          {Object.values(categoryGroup.subProjects).map((subProjectGroup: any) => (
-                            <div key={subProjectGroup.subProject.id} className="border-l-4 border-secondary pl-6">
-                              <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                                <div className="w-3 h-3 bg-secondary rounded-full"></div>
-                                {subProjectGroup.subProject.name}
-                              </h4>
-                              <div className="grid gap-4 lg:grid-cols-2">
-                                {subProjectGroup.programs.map((program: any) => (
-                                  <Card key={program.id} className="border-border/50 hover:shadow-md transition-shadow">
-                                    <CardContent className="p-4">
-                                      <div className="flex justify-between items-start mb-3">
-                                        <h5 className="font-semibold text-foreground text-lg">{program.program_name}</h5>
-                                        <Badge variant={program.status === 'pending' ? 'secondary' : program.status === 'approved' ? 'default' : 'outline'}>
-                                          {program.status}
-                                        </Badge>
-                                      </div>
-                                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                                        {program.description}
-                                      </p>
-                                      {program.qualifications && (
-                                        <div className="mb-3">
-                                          <p className="text-xs font-medium text-muted-foreground mb-1">Qualifications:</p>
-                                          <p className="text-xs text-muted-foreground line-clamp-2">
-                                            {program.qualifications}
-                                          </p>
-                                        </div>
-                                      )}
-                                      <div className="flex justify-between items-center pt-3 border-t border-border/50">
-                                        <span className="text-xs text-muted-foreground">
-                                          Added: {new Date(program.created_at).toLocaleDateString()}
-                                        </span>
-                                        <Button 
-                                          onClick={() => handleApplyToProgram(program.id)}
-                                          disabled={applyToProgramMutation.isPending || applicationsLoading}
-                                          size="sm"
-                                          className="bg-primary text-primary-foreground hover:bg-primary/90"
-                                        >
-                                          {applyToProgramMutation.isPending ? 'Applying...' : 'Apply'}
-                                        </Button>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
+                      
+                      {isExpanded && (
+                        <CardContent className="pt-6">
+                          <div className="space-y-8">
+                            {(Object.values(categoryGroup.subProjects) as any[]).map((subProjectGroup: any) => (
+                              <div key={subProjectGroup.subProject.id}>
+                                <div className="flex items-center gap-3 mb-4">
+                                  <div className="w-4 h-4 bg-secondary rounded-full"></div>
+                                  <h4 className="text-lg font-semibold text-foreground">
+                                    {subProjectGroup.subProject.name}
+                                  </h4>
+                                  <Badge variant="secondary" className="text-xs">
+                                    {subProjectGroup.programs.length} programs
+                                  </Badge>
+                                </div>
+                                
+                                <div className="rounded-md border">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>Program Name</TableHead>
+                                        <TableHead>Description</TableHead>
+                                        <TableHead>Qualifications</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {subProjectGroup.programs.map((program: any) => (
+                                        <TableRow key={program.id}>
+                                          <TableCell className="font-medium">{program.program_name}</TableCell>
+                                          <TableCell>
+                                            <div className="max-w-xs text-sm" title={program.description}>
+                                              {program.description}
+                                            </div>
+                                          </TableCell>
+                                          <TableCell>
+                                            <div className="max-w-xs text-sm" title={program.qualifications}>
+                                              {program.qualifications || 'No specific requirements'}
+                                            </div>
+                                          </TableCell>
+                                          <TableCell>
+                                            <Badge variant={program.status === 'pending' ? 'secondary' : program.status === 'approved' ? 'default' : 'outline'}>
+                                              {program.status}
+                                            </Badge>
+                                          </TableCell>
+                                          <TableCell className="text-right">
+                                            <Button 
+                                              onClick={() => handleApplyToProgram(program.id)}
+                                              disabled={applyToProgramMutation.isPending || applicationsLoading}
+                                              size="sm"
+                                              className="bg-primary text-primary-foreground hover:bg-primary/90"
+                                            >
+                                              {applyToProgramMutation.isPending ? 'Applying...' : 'Apply'}
+                                            </Button>
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
+                            ))}
+                          </div>
+                        </CardContent>
+                      )}
                     </Card>
-                  ));
-                })()}
+                  );
+                })}
               </div>
             )}
           </div>
