@@ -116,7 +116,7 @@ export const useCreateRequest = (userData?: any) => {
       const requestTypeText = variables.requestType === 'cancel' ? 'cancellation' : 'multi-program';
       toast({
         title: "Request Submitted",
-        description: `Your ${requestTypeText} request has been submitted for admin review`,
+        description: `Your ${requestTypeText} request has been submitted for super admin review`,
       });
     },
     onError: (error) => {

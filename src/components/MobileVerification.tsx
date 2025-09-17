@@ -72,7 +72,7 @@ const MobileVerification = ({ onVerified, onNotRegistered }: MobileVerificationP
           setAlertDialog({
             isOpen: true,
             title: "Access Denied",
-            description: "Your registration is not yet approved. Please contact admin for approval."
+            description: "Your registration is not yet approved. Please contact super admin for approval."
           });
           return;
         }

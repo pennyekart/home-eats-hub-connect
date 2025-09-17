@@ -522,7 +522,7 @@ const Admin = () => {
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Admin Panel</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Super Admin Panel</h1>
           <p className="text-muted-foreground">Manage registrations for the self-employment program</p>
         </div>
 
