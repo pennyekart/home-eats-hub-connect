@@ -201,3 +201,25 @@ export const useRemoveTeamMember = () => {
     },
   });
 };
+
+export const useCheckTeamMembership = (mobileNumber?: string) => {
+  return useQuery({
+    queryKey: ["team-membership", mobileNumber],
+    queryFn: async () => {
+      if (!mobileNumber) return null;
+      
+      const { data, error } = await supabase
+        .from("team_members")
+        .select(`
+          *,
+          teams(name, description)
+        `)
+        .eq("member_mobile", mobileNumber)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
+      return data;
+    },
+    enabled: !!mobileNumber,
+  });
+};

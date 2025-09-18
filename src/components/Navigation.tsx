@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Home, Briefcase, Plus, User, LogOut } from 'lucide-react';
+import { Home, Briefcase, Plus, User, LogOut, Settings } from 'lucide-react';
+import { useCheckTeamMembership } from '@/hooks/useTeams';
 
 interface NavigationProps {
   userData: any;
@@ -10,12 +11,19 @@ interface NavigationProps {
 }
 
 const Navigation = ({ userData, onLogout, currentView, onViewChange }: NavigationProps) => {
+  const { data: teamMembership } = useCheckTeamMembership(userData?.mobile_number);
+  const isTeamMember = !!teamMembership;
+
   const navItems = [
     { id: 'dashboard', label: 'ഡാഷ്ബോർഡ്', icon: Home },
     { id: 'jobs', label: 'തൊഴിലവസരങ്ങൾ', icon: Briefcase },
     { id: 'programs', label: 'പദ്ധതികൾ', icon: Plus },
     { id: 'profile', label: 'പ്രൊഫൈൽ', icon: User },
   ] as const;
+
+  const handleAdminPanelClick = () => {
+    window.location.href = '/team-admin';
+  };
 
   return (
     <nav className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -49,6 +57,13 @@ const Navigation = ({ userData, onLogout, currentView, onViewChange }: Navigatio
                 );
               })}
             </div>
+            
+            {isTeamMember && (
+              <Button variant="outline" size="sm" onClick={handleAdminPanelClick}>
+                <Settings className="h-4 w-4 mr-2" />
+                Admin Panel
+              </Button>
+            )}
             
             <Button variant="outline" size="sm" onClick={onLogout}>
               <LogOut className="h-4 w-4 mr-2" />

@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymentCategories';
 import { usePrograms, useCreateProgram } from '@/hooks/usePrograms';
 import { useUserApplications, useApplyToProgram, useCreateRequest } from '@/hooks/useProgramApplications';
+import { useCheckTeamMembership } from '@/hooks/useTeams';
 import Navigation from '@/components/Navigation';
 import MultipleApplicationPopup from '@/components/MultipleApplicationPopup';
 
@@ -51,6 +52,9 @@ const LandingPage = ({
   const { data: userApplications = [], isLoading: applicationsLoading } = useUserApplications(userData);
   const applyToProgramMutation = useApplyToProgram(userData);
   const createRequestMutation = useCreateRequest(userData);
+  
+  // Team membership check
+  const { data: teamMembership } = useCheckTeamMembership(userData?.mobile_number);
 
   // Group sub-projects by category for easy access
   const categorySubProjects = allSubProjects.reduce((acc, subProject) => {
@@ -206,7 +210,14 @@ const LandingPage = ({
             </div>
             <div>
               <CardTitle className="text-2xl text-foreground">{userData?.name || 'User Name'}</CardTitle>
-              <CardDescription className="text-muted-foreground">Profile Details</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                Profile Details
+                {teamMembership && (
+                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                    Team Member - {teamMembership.teams?.name}
+                  </span>
+                )}
+              </CardDescription>
             </div>
           </div>
         </CardHeader>
