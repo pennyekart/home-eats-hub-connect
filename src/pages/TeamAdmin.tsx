@@ -8,7 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Users, FileText, Calendar, Eye, Plus, Edit, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Users, FileText, Calendar, Eye, Plus, Edit, Trash2, CheckCircle, XCircle, Clock, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { usePrograms, useCreateProgram, useUpdateProgram, useDeleteProgram } from '@/hooks/usePrograms';
 import { useAllApplications, useUpdateApplicationStatus } from '@/hooks/useProgramApplications';
 import { useTeams } from '@/hooks/useTeams';
@@ -22,6 +24,7 @@ const TeamAdmin = () => {
   // Program management states
   const [isCreateProgramOpen, setIsCreateProgramOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<any>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [newProgramName, setNewProgramName] = useState('');
   const [newProgramDescription, setNewProgramDescription] = useState('');
   const [newProgramQualifications, setNewProgramQualifications] = useState('');
@@ -105,6 +108,36 @@ const TeamAdmin = () => {
 
   const updateApplicationStatus = (applicationId: string, status: string) => {
     updateApplicationStatusMutation.mutate({ applicationId, status });
+  };
+
+  // Group programs by category
+  const programsByCategory = employmentCategories.reduce((acc, category) => {
+    const categoryPrograms = filteredPrograms?.filter(program => 
+      program.category_id === category.id
+    ) || [];
+    if (categoryPrograms.length > 0) {
+      acc[category.id] = {
+        category,
+        programs: categoryPrograms
+      };
+    }
+    return acc;
+  }, {} as Record<string, { category: any, programs: any[] }>);
+
+  // Group sub-projects by category for display
+  const subProjectsByCategory = allSubProjects.reduce((acc, subProject) => {
+    if (!acc[subProject.category_id]) {
+      acc[subProject.category_id] = [];
+    }
+    acc[subProject.category_id].push(subProject);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
   };
 
   if (programsLoading || applicationsLoading || teamsLoading) {
@@ -228,97 +261,212 @@ const TeamAdmin = () => {
             </Dialog>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredPrograms?.map((program) => {
-              const programApplications = getProgramApplications(program.id);
+          <div className="space-y-6">
+            {Object.entries(programsByCategory).map(([categoryId, { category, programs }]) => {
+              const categorySubProjects = subProjectsByCategory[categoryId] || [];
+              const isExpanded = expandedCategories[categoryId];
+              
               return (
-                <Card key={program.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{program.program_name}</CardTitle>
-                        <CardDescription>{program.description}</CardDescription>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingProgram(program)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteProgram(program.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {program.employment_categories?.display_name}
-                        </Badge>
-                        <Badge variant={program.status === 'active' ? 'default' : 'secondary'}>
-                          {program.status}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          <span>{programApplications.length} applications</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{format(new Date(program.created_at), 'MMM dd')}</span>
-                        </div>
-                      </div>
-
-                      {program.qualifications && (
-                        <div className="text-sm">
-                          <span className="font-medium">Qualifications:</span>
-                          <p className="text-muted-foreground mt-1">{program.qualifications}</p>
-                        </div>
-                      )}
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => setSelectedProgram(selectedProgram === program.id ? null : program.id)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        {selectedProgram === program.id ? 'Hide' : 'View'} Applications
-                      </Button>
-
-                      {selectedProgram === program.id && programApplications.length > 0 && (
-                        <div className="mt-4 space-y-2 border-t pt-4">
-                          <h4 className="font-medium text-sm">Applications ({programApplications.length})</h4>
-                          {programApplications.map((app) => (
-                            <div key={app.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
-                              <div className="text-sm">
-                                <div className="font-medium">Application #{app.id.slice(0, 8)}</div>
-                                <div className="text-muted-foreground text-xs">
-                                  Applied: {format(new Date(app.applied_at), 'MMM dd, yyyy')}
-                                </div>
-                              </div>
-                              <Badge className={getStatusColor(app.status)}>
-                                {app.status}
-                              </Badge>
+                <Card key={categoryId} className="overflow-hidden">
+                  <Collapsible 
+                    open={isExpanded} 
+                    onOpenChange={() => toggleCategory(categoryId)}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <FolderOpen className="h-5 w-5 text-primary" />
                             </div>
-                          ))}
+                            <div>
+                              <CardTitle className="text-xl">{category.display_name}</CardTitle>
+                              <CardDescription>
+                                {category.description || 'Employment category'}
+                              </CardDescription>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">
+                              {programs.length} programs
+                            </Badge>
+                            {isExpanded ? 
+                              <ChevronDown className="h-4 w-4" /> : 
+                              <ChevronRight className="h-4 w-4" />
+                            }
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <CardContent className="pt-0">
+                        {/* Sub-projects */}
+                        {categorySubProjects.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-muted-foreground mb-2">Sub-projects:</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {categorySubProjects.map((subProject) => (
+                                <Badge key={subProject.id} variant="outline" className="text-xs">
+                                  {subProject.display_name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Programs Table */}
+                        <div className="border rounded-lg">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Program Name</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead>Sub-project</TableHead>
+                                <TableHead>Applications</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Created</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {programs.map((program) => {
+                                const programApplications = getProgramApplications(program.id);
+                                const subProject = allSubProjects.find(sp => sp.id === program.sub_project_id);
+                                
+                                return (
+                                  <TableRow key={program.id} className="hover:bg-muted/50">
+                                    <TableCell className="font-medium">
+                                      {program.program_name}
+                                    </TableCell>
+                                    <TableCell className="max-w-xs">
+                                      <div className="truncate" title={program.description}>
+                                        {program.description}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      {subProject ? (
+                                        <Badge variant="outline" className="text-xs">
+                                          {subProject.display_name}
+                                        </Badge>
+                                      ) : (
+                                        <span className="text-muted-foreground text-sm">-</span>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="secondary" className="text-xs">
+                                          {programApplications.length}
+                                        </Badge>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => setSelectedProgram(selectedProgram === program.id ? null : program.id)}
+                                        >
+                                          <Eye className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant={program.status === 'active' ? 'default' : 'secondary'}>
+                                        {program.status}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                      {format(new Date(program.created_at), 'MMM dd, yyyy')}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex gap-1 justify-end">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => setEditingProgram(program)}
+                                        >
+                                          <Edit className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => deleteProgram(program.id)}
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                        
+                        {/* Application Details */}
+                        {selectedProgram && programs.some(p => p.id === selectedProgram) && (
+                          <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                            <h4 className="font-medium mb-3">Applications for {programs.find(p => p.id === selectedProgram)?.program_name}</h4>
+                            {getProgramApplications(selectedProgram).length > 0 ? (
+                              <div className="space-y-2">
+                                {getProgramApplications(selectedProgram).map((app) => (
+                                  <div key={app.id} className="flex items-center justify-between p-3 bg-background rounded-md border">
+                                    <div className="text-sm">
+                                      <div className="font-medium">Application #{app.id.slice(0, 8)}</div>
+                                      <div className="text-muted-foreground text-xs">
+                                        Applied: {format(new Date(app.applied_at), 'MMM dd, yyyy HH:mm')}
+                                      </div>
+                                      <div className="text-muted-foreground text-xs">
+                                        User: {app.user_id.slice(0, 8)}...
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge className={getStatusColor(app.status)}>
+                                        {app.status}
+                                      </Badge>
+                                      {app.status === 'pending' && (
+                                        <div className="flex gap-1">
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => updateApplicationStatus(app.id, 'approved')}
+                                          >
+                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                            Approve
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => updateApplicationStatus(app.id, 'rejected')}
+                                          >
+                                            <XCircle className="h-3 w-3 mr-1" />
+                                            Reject
+                                          </Button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">No applications yet.</p>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </Card>
               );
             })}
+            
+            {Object.keys(programsByCategory).length === 0 && (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No programs found</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
