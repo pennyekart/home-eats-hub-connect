@@ -13,6 +13,7 @@ import { useEmploymentCategories, useAllSubProjects } from '@/hooks/useEmploymen
 import { usePrograms, useCreateProgram } from '@/hooks/usePrograms';
 import { useUserApplications, useApplyToProgram, useCreateRequest } from '@/hooks/useProgramApplications';
 import { useCheckTeamMembership } from '@/hooks/useTeams';
+import { usePanchayaths } from '@/hooks/usePanchayaths';
 import Navigation from '@/components/Navigation';
 import MultipleApplicationPopup from '@/components/MultipleApplicationPopup';
 
@@ -55,6 +56,7 @@ const LandingPage = ({
   
   // Team membership check
   const { data: teamMembership } = useCheckTeamMembership(userData?.mobile_number);
+  const { data: panchayaths = [] } = usePanchayaths();
 
   // Group sub-projects by category for easy access
   const categorySubProjects = allSubProjects.reduce((acc, subProject) => {
@@ -200,6 +202,14 @@ const LandingPage = ({
     }, {});
   };
 
+  // Get panchayath name from the fetched panchayaths data
+  const getPanchayathName = () => {
+    if (!userData?.panchayath_id) return userData?.panchayath || 'N/A';
+    
+    const panchayath = panchayaths.find(p => p.id === userData.panchayath_id || p.panchayath_id === userData.panchayath_id);
+    return panchayath ? (panchayath.name_english || panchayath.name_malayalam || 'N/A') : (userData?.panchayath || 'N/A');
+  };
+
   const renderProfileView = () => (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card className="border-primary/20 shadow-lg">
@@ -235,7 +245,7 @@ const LandingPage = ({
                 <MapPin className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Panchayath</p>
-                  <p className="font-semibold text-foreground">{userData?.panchayath || 'N/A'}</p>
+                  <p className="font-semibold text-foreground">{getPanchayathName()}</p>
                 </div>
               </div>
             </div>
