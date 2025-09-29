@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // No custom env prefix needed - use default Vite behavior
+  // Disable environment variable processing to prevent env.mjs issues
+  envPrefix: [],
   define: {
     __WS_TOKEN__: JSON.stringify(''),
   },
