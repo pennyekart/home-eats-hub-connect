@@ -1,4 +1,4 @@
-import { useUserPrograms } from "@/hooks/usePrograms";
+import { usePrograms } from "@/hooks/usePrograms";
 import { useEmploymentCategories } from "@/hooks/useEmploymentCategories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, FileText, Tag } from "lucide-react";
 
 const MyPrograms = () => {
-  const { data: programs, isLoading: programsLoading } = useUserPrograms();
+  const { data: programs, isLoading: programsLoading } = usePrograms();
   const { data: categories } = useEmploymentCategories();
 
   if (programsLoading) {
