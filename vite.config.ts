@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Restrict env exposure to avoid broken VITE_* vars causing env.mjs parse errors
-  envPrefix: "APP_",
+  // Allow VITE_ prefix for environment variables
+  envPrefix: ["VITE_", "APP_"],
   define: {
     __WS_TOKEN__: JSON.stringify(''),
   },
