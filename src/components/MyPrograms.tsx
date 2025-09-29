@@ -12,7 +12,7 @@ const MyPrograms = () => {
   if (programsLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold mb-4">എന്റെ പദ്ധതികൾ</h2>
+        <h2 className="text-xl font-semibold mb-4">പദ്ധതികൾ</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
@@ -33,10 +33,10 @@ const MyPrograms = () => {
   if (!programs || programs.length === 0) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold mb-4">എന്റെ പദ്ധതികൾ</h2>
+        <h2 className="text-xl font-semibold mb-4">പദ്ധതികൾ</h2>
         <div className="text-center py-12">
           <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">നിങ്ങൾ ഇതുവരെ പദ്ധതികളൊന്നും ചേർത്തിട്ടില്ല</p>
+          <p className="text-muted-foreground">ഇപ്പോൾ പദ്ധതികളൊന്നുമില്ല</p>
         </div>
       </div>
     );
@@ -44,7 +44,7 @@ const MyPrograms = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold mb-4">എന്റെ പദ്ധതികൾ</h2>
+      <h2 className="text-xl font-semibold mb-4">പദ്ധതികൾ</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {programs.map((program) => {
           const category = categories?.find(c => c.id === program.category_id);
