@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Allow VITE_ prefix for environment variables
-  envPrefix: ["VITE_", "APP_"],
+  // Restrict env exposure since VITE_ vars are not supported in Lovable
+  envPrefix: "APP_",
   define: {
     __WS_TOKEN__: JSON.stringify(''),
   },
