@@ -41,6 +41,36 @@ export type Database = {
         }
         Relationships: []
       }
+      panchayaths: {
+        Row: {
+          created_at: string
+          district: string | null
+          id: string
+          name_english: string
+          name_malayalam: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          district?: string | null
+          id?: string
+          name_english: string
+          name_malayalam?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          district?: string | null
+          id?: string
+          name_english?: string
+          name_malayalam?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       program_applications: {
         Row: {
           applied_at: string
